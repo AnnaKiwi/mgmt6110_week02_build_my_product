@@ -1,0 +1,7 @@
+{
+  "name": "DailySalesDashboard",
+  "description": "Daily condominium sales performance dashboard for property sales managers in Singapore, featuring daily transactions, salesperson rankings, and development group benchmarks.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
+
