@@ -4,17 +4,11 @@
 
 # Q1: Who are your users, and what changes for them?
 
-My users are internal users — marketing managers of a single real‑estate project within a property developer group. They work at on‑site project offices. The group has 10 such marketing managers in total, and each manages a sales team of 10 people. Their core responsibilities are tracking daily sales performance, monthly sales progress, and completion of annual marketing targets.
+My users are internal users — marketing managers of a single condominium project in a real estate developer group. They work at the project site office. The group has 10 such managers, each leading a team of 10 salespeople. Their main job is to track daily sales, monthly progress, and annual target completion.
 
-Without this sales dashboard, every marketing manager works with a dedicated statistics clerk, who uses Excel spreadsheets as ledgers. The daily workflow goes step‑by‑step like this: sales staff submit deal reports throughout the day → after sales close at 8 p.m., the statistics clerk starts overtime work to aggregate data → manually inputs and calculates all indicators → generates reports and sends them to marketing managers → marketing managers can only review data from the previous day on the next day. Manual statistics often produce mistakes: reading wrong rows, typing wrong amounts, or missing calculations due to large volumes of data.
+Before this dashboard, each manager had a dedicated data clerk using Excel as the ledger. The daily flow was: salespeople report deals all day → the clerk works overtime after 8pm closing to aggregate data → manually calculates all metrics → sends a report → the manager reviews only the next day. Manual work often caused errors: reading the wrong row, entering wrong amounts, or missing entries. Clerks had to work overtime every day, especially at month-end. Managers could not see real-time data and had to wait for the report. If the group expanded, each new project needed another clerk, and labor cost grew linearly.
 
-From the statistics clerks’ perspective, they have to work overtime every day. They also need to stay on call around month‑end and year‑end closing periods.
-From the marketing managers’ perspective, they cannot follow real‑time sales updates and can only passively wait for statistical outputs. If the group expands its business to more property projects, each new project requires an additional statistics clerk, so labor costs grow linearly.
-
-My dashboard removes the manual data aggregation step — the nightly Excel ledger work done by statistics clerks. It also reorders the workflow from “wait for reports → carry out reviews” to “real‑time data → make immediate decisions”. Optimizations cover three dimensions.
-First, labor‑cost optimization. The group only needs 1‑2 data clerks in total. One clerk can handle data entry for multiple projects at the same time. No dedicated clerk is required per project, and statistics staff no longer need to work overtime.
-Second, better data accuracy. After data clerks input deal records into the system, the dashboard calculates all indicators automatically. This eliminates human‑made errors such as misreading rows, typing wrong numbers, and missing amount calculations.
-Third, improved timeliness. Marketing managers can check at any time how many units have been sold and what revenue has been generated at specific timestamps. They can also view monthly target completion rates clearly via the progress bar. Thus they can adjust sales strategies right away. For example, they can offer bigger discounts when sales fall behind targets, or tighten promotions to raise profit margins when sales go ahead of schedule.
+My dashboard removes the manual aggregation step (the clerk's nightly Excel work) and reorders the process from "wait for report → review" to "real-time data → immediate decision." Now only 1 to 2 clerks manage multiple projects with no overtime. Data is calculated automatically after entry, so human errors are gone. Managers can check anytime how many units sold at what time, and the monthly progress bar shows target completion clearly. They can adjust strategy immediately — increase discounts when behind, or tighten promotions when ahead to protect profit.
 
 ---
 
@@ -28,49 +22,33 @@ I had never built a sales dashboard before. In a real company, this takes weeks 
 
 **2. Time shifted from coding to product thinking**
 
-Most of my time went to information architecture, not technical implementation. I thought about: what data does the manager care most about at 8pm? Which metrics go on the first screen? What format helps them decide fast? How to keep the menu simple on a phone? AI handled the front-end, so I focused on product definition and user experience — which is what a product person should do.
+Augmented — weeks of cross-department work compressed into one afternoon. I had never built a sales dashboard. In a real company this takes weeks of meetings across sales, operations and IT. With AI I had a working, deployable mobile dashboard in an afternoon, and almost all of that time went to information architecture rather than implementation: what does the manager care about most at 8pm, which metric goes first, how does the menu stay simple on a phone. The build did not make me a better developer. It moved my time to product definition.
 
-### Constrained capacity
+Constrained — I can only describe symptoms. After Prompt 3 the top-deal badge was overlapped and cut off. All I could say was "the badge is covered, not fully shown", then wait. I could not tell whether the fix touched the right line, and I could not do it myself. I know the click path, not the code, so anything the chat panel cannot fix leaves me stuck.
 
-**1. Cannot read code, can only describe symptoms**
-
-I could only see the front-end visual result. When the top-deal badge was blocked after Prompt 3, I could only say "the badge is covered, not fully shown" and wait for AI to fix it. I could not tell if AI changed the right line of code, and I could not fix it myself. If a problem cannot be fixed through the chat panel, I am completely stuck — I know the click path, not the code.
-
-**2. AI's defaults became my product's defaults**
-
-Without precise color instructions, the first version had messy, inconsistent colors across modules. It was purely the model's own default choice. If I do not specify every visual detail, the product carries the model's aesthetic bias, not my design judgment. I felt this when I saw the first version, then had to start Prompt 2 to force unified colors and layout.
-
-**3. Verification became the bottleneck**
-
-AI generated hundreds of lines at once. I only checked my Goal list — "is this component there?" "does the data show?" — not the code logic. The monthly percentage was hardcoded, but I saw a number and thought it worked. I only found out later it did not change with data. This shows AI can do a lot of development, but few tasks can be fully delegated, because verification cannot keep up with generation.
+Constrained — verification could not keep up with generation. AI wrote hundreds of lines at once and I checked only my Goal list: is the component there, does data show. Never the logic. Few tasks can be fully delegated, not because the model cannot do them, but because I cannot check them as fast as it produces them.
 
 ---
 
 # Q3: In the loop, on the loop, out of the loop
 
-### Two kinds of moments in my PROMPTS.md
+### Reading back through my PROMPTS.md, two kinds of moment.
 
-**My judgment changed the outcome:**
+My judgment changed the outcome. In Prompt 3 I added the salesperson monthly-performance module. It was not in my spec, but a manager needs history to decide on motivation or reassignment — that came from the business, not the model.
 
-- I found the monthly percentage was hardcoded. I saw a number and passed the visual check, but later found it did not change with new data. I asked AI to make it dynamic. Without this deep check, the error would have shipped.
-- I added the salesperson historical performance module. It was not in the original requirements, but I knew managers need this to judge employee performance and decide on motivation or reassignment. This came from my business understanding, which AI cannot replace.
+I was nominally in the loop and added nothing. When the top-deal badge broke I could only describe the symptom and accept whatever came back. And I approved the entire first version without reading a line of it — the hardcoded monthly percentage sat there through my visual check.
 
-**I was nominally in the loop but added nothing:**
+Walking the real product, judged on reversibility, stakes, checkability and who bears the error:
 
-- When the top-deal badge was blocked, I could only describe the symptom and wait for AI. I could not evaluate whether the fix was correct.
-- After the first version, I accepted it without reading the code. I only checked the Goal list, not the logic. The hardcoded percentage is proof I "accepted without reading."
+Entering deal data — in the loop. Every other number derives from it, and a wrong figure is hard to spot downstream.
+Auto-calculating summaries — out of the loop. Pure arithmetic, instantly re-runnable, cheap to check.
+Rendering the dashboard — out of the loop. Display only, no stakes.
+Abnormal progress alerts — on the loop. High volume; it runs itself while people watch totals and sample outputs.
+Adjusting discount strategy — in the loop. A signed discount cannot be undone and the company bears the loss.
 
-### Five steps if the product goes live
+I would sign off step 2 as out of the loop on three conditions: cross-check rules that flag totals which do not reconcile, a daily sampled data-quality report, and logs complete enough to trace any figure months later.
 
-1. **Entering deal data — in the loop.** Raw data accuracy is high stakes. A person must confirm after entry.
-2. **Auto-calculating summaries — out of the loop.** Pure math, high reversibility, can be auto-checked with cross-check rules.
-3. **Rendering the dashboard — out of the loop.** Pure display, no risk, no human intervention needed.
-4. **Abnormal progress alerts — on the loop.** System runs automatically. People watch totals and sample-check outputs.
-5. **Adjusting discount strategy — in the loop.** Signed discounts cannot be undone. Directly affects profit. A human must decide.
-
-**One step can be out of the loop: auto-calculation of summaries.** I would sign off if three conditions are met: the system has built-in cross-check rules that flag errors; it generates a daily data quality report with sampling; and all calculation logic has complete logs for tracing.
-
-**One step must stay in the loop: discount strategy adjustment.** It directly affects profit and cannot be reversed. Market sentiment, team morale, and brand judgment cannot be reduced to data. No matter how good AI gets at recommending discounts, a human must make the final call.
+Step 5 stays in the loop however expensive. Market sentiment, team morale and brand judgment do not reduce to the data on this screen, and the decision cannot be undone.
 
 ---
 
