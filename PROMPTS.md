@@ -1,4 +1,15 @@
-# Prompts Log‑Daily Sales Dashboard
+# PROMPTS.md - Daily Sales Dashboard
+
+**Student:** Zhang Chenxi · **Course:** MGMT 6110 · **Problem Set 1**
+
+**User sentence:** A property sales manager opens this screen to review daily closing sales results for their condominium sales team, and knows it worked when they see accurate end‑of‑day performance figures on mobile.
+
+**Live link:** https://mgmt6110-week02-build-my-product.vercel.app/
+
+---
+
+## Prompt 1 - the master prompt
+
 ROLE: You are a senior front-end developer building a React web app.
 
 GOAL: Build the front end of DailySalesDashboard, a web product for a property sales manager who runs the sales team of a single condominium development in Singapore. The team has 10 salespeople. The manager checks sales data on their phone throughout the day, but the most important check is at 8pm after the daily sales closing, when they confirm the day's final results. Reviewing monthly performance is part of their routine, but this product focuses on the daily dashboard only — no monthly pages.
@@ -44,7 +55,13 @@ One component per screen section. Move between screens without reloading the pag
 GUARDRAILS: Screens and invented data only. Do NOT call the Gemini API or any other model. Do NOT call any outside service or fetch from any URL. No database, no login, no user accounts, no analytics. No features I did not list. No real company's name, logo, or trademark. Invented names and numbers only, nothing confidential.
 CONTEXT: Individual Problem Set 1 for MGMT 6110 Human-AI Collaboration at SMU. Built in Google AI Studio, shared as a link, and opened on a phone by classmates in Week 3. I am not a programmer: when you make a choice I did not specify, say so in one line rather than burying it.
 
-## Prompt 1：Initial generation
+**What came back:** A functional dashboard prototype was generated. It generally matched the core requirements for the property sales manager use‑case.
+
+**What I changed next and why:** Applied visual updates, including compact table layout and unified color palette, to enhance readability for mobile users. 
+
+---
+
+## Prompt 2：Visual changes
 I have two visual changes. Apply both, change nothing else.
 
 MIDDLE SECTION (Salesperson Ranking): Currently it is a long card list. Change it to a COMPACT TABLE format so all 10 salespeople fit in less vertical space. Each row shows: rank number, name, units sold, total amount. Keep the #1 champion row highlighted in gold. Keep the column header tap-to-sort functionality (by amount / by units). Keep the filter-by-name functionality. Make it readable on a phone.
@@ -64,7 +81,13 @@ The monthly progress bars use gold fill on light gray track.
 Keep all data, logic, interactions, and the three-section structure exactly the same. Only the visual styling changes.
 Also fix: the "75.4% monthly target" in the top KPI card is hardcoded. Calculate it dynamically from the current development's monthly completed amount divided by monthly target.
 
-## Prompt 2：Revise UI layout
+**What came back:** Partial visual updates took effect. The monthly‑target percentage value remained hard‑coded, and several color‑scheme adjustments were not fully applied.
+
+**What I changed next and why:** Re‑issued the visual‑update prompt to enforce full execution of color palette replacement and dynamic calculation for monthly‑target progress.
+
+---
+
+## Prompt 3：Revise UI layout
 Apply the following changes. Change nothing else.
 
 CHANGE 1 — Top transaction list becomes a compact table:
@@ -100,7 +123,13 @@ The detail card uses the same navy + gold color scheme. Navy background for the 
 
 Do NOT add a modal/bottom sheet. This is an inline expandable card within the top transaction section. Do NOT change the middle ranking table, bottom group ranking, or KPI summary cards. Only change the top transaction section as described.
 
-## Prompt 3：Adjust table style
+**What came back:** Compact tables rendered, yet the top‑deal badge got overlapped / cut off by surrounding UI elements. The "Area" column lacked clear definition in requirements.
+
+**What I changed next and why:** Add fixes for overlapping top‑deal badge, and add explicit definition for the Area column to remove requirement ambiguity.
+
+---
+
+## Prompt 4：Adjust table style
 Two small fixes to the top transaction table only. Change nothing else.
 
 Column header: change "AREA" to "AREA (sqft)" so the unit is clear.
