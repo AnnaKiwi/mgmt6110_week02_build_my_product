@@ -68,7 +68,7 @@ AI generated hundreds of lines at once. I only checked my Goal list — "is this
 
 ---
 
-## Q4: What did it build that you never sketched?
+# Q4: What did it build that you never sketched?
 
 Three kinds of gaps between my sketch and the final product:
 
@@ -82,7 +82,7 @@ Three kinds of gaps between my sketch and the final product:
 
 ---
 
-## Q5: Learning pointers for the organisational context
+# Q5: Learning pointers for the organisational context
 
 Thinking from "where decisions live" and "what the build exposed," and based on my own build experience, here are three pointers for a hundred-person organization using these tools weekly:
 
