@@ -1,3 +1,7 @@
+**Student:** [Zhang Chenxi] · **Course:** MGMT 6110 · **Problem Set 1**
+
+---
+
 # Q1: Who are your users, and what changes for them?
 
 My users are internal users — marketing managers of a single real‑estate project within a property developer group. They work at on‑site project offices. The group has 10 such marketing managers in total, and each manages a sales team of 10 people. Their core responsibilities are tracking daily sales performance, monthly sales progress, and completion of annual marketing targets.
@@ -11,6 +15,9 @@ My dashboard removes the manual data aggregation step — the nightly Excel ledg
 First, labor‑cost optimization. The group only needs 1‑2 data clerks in total. One clerk can handle data entry for multiple projects at the same time. No dedicated clerk is required per project, and statistics staff no longer need to work overtime.
 Second, better data accuracy. After data clerks input deal records into the system, the dashboard calculates all indicators automatically. This eliminates human‑made errors such as misreading rows, typing wrong numbers, and missing amount calculations.
 Third, improved timeliness. Marketing managers can check at any time how many units have been sold and what revenue has been generated at specific timestamps. They can also view monthly target completion rates clearly via the progress bar. Thus they can adjust sales strategies right away. For example, they can offer bigger discounts when sales fall behind targets, or tighten promotions to raise profit margins when sales go ahead of schedule.
+
+---
+
 # Q2: Augmented capacity and constrained capacity
 
 ### Augmented capacity
@@ -36,6 +43,8 @@ Without precise color instructions, the first version had messy, inconsistent co
 **3. Verification became the bottleneck**
 
 AI generated hundreds of lines at once. I only checked my Goal list — "is this component there?" "does the data show?" — not the code logic. The monthly percentage was hardcoded, but I saw a number and thought it worked. I only found out later it did not change with data. This shows AI can do a lot of development, but few tasks can be fully delegated, because verification cannot keep up with generation.
+
+---
 
 # Q3: In the loop, on the loop, out of the loop
 
@@ -63,6 +72,7 @@ AI generated hundreds of lines at once. I only checked my Goal list — "is this
 
 **One step must stay in the loop: discount strategy adjustment.** It directly affects profit and cannot be reversed. Market sentiment, team morale, and brand judgment cannot be reduced to data. No matter how good AI gets at recommending discounts, a human must make the final call.
 
+---
 
 ## Q4: What did it build that you never sketched?
 
@@ -76,6 +86,7 @@ Three kinds of gaps between my sketch and the final product:
 
 **Most important gap: the monthly percentage was hardcoded.** I noticed it only after multiple iterations, not during the build or at deployment. I saw a number on the screen and passed visual check. I should have written in the Goal list that the percentage must be dynamically calculated as daily sales divided by monthly target. And during verification, I should have changed a test deal to see if the number moved. I thought "show monthly progress" was a complete requirement, but "where the number comes from" is itself a decision I failed to specify. This is the hidden risk of AI products — it decides for you in places you did not realize were decisions.
 
+---
 
 ## Q5: Learning pointers for the organisational context
 
