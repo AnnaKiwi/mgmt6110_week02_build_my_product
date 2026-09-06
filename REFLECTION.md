@@ -1,4 +1,4 @@
-**Student:** [Zhang Chenxi] · **Course:** MGMT 6110 · **Problem Set 1**
+**Student:** Zhang Chenxi· **Course:** MGMT 6110 · **Problem Set 1**
 
 ---
 
