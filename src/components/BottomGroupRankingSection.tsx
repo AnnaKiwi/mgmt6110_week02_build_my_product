@@ -1,27 +1,21 @@
 import React from 'react';
-import {
-  Building,
-  Flag,
-  Target,
-} from 'lucide-react';
-import { formatCompactCurrency, formatCurrency } from '../data';
-import { DevelopmentRecord } from '../types';
+import { Crown, Target, TrendingUp } from 'lucide-react';
+import { formatCurrency, formatPsf } from '../data';
+import { TownRankingItem } from '../types';
 
 interface BottomGroupRankingSectionProps {
-  developments: DevelopmentRecord[];
+  townRanking: TownRankingItem[];
+  selectedTown: string | null;
+  latestMonth: string;
+  onSelectTown: (town: string) => void;
 }
 
 export const BottomGroupRankingSection: React.FC<
   BottomGroupRankingSectionProps
-> = ({ developments }) => {
-  // Sort developments by daily sales amount highest to lowest
-  const sortedDevelopments = [...developments].sort(
-    (a, b) => b.dailySalesAmount - a.dailySalesAmount
-  );
-
-  const managerDev = sortedDevelopments.find((d) => d.isCurrentDevelopment);
-  const managerRank =
-    managerDev ? sortedDevelopments.findIndex((d) => d.isCurrentDevelopment) + 1 : 0;
+> = ({ townRanking, selectedTown, latestMonth, onSelectTown }) => {
+  // Limit the ranking list to show only TOP 10 towns of that day (CHANGE 3)
+  const top10Towns = townRanking.slice(0, 10);
+  const topTown = top10Towns[0];
 
   return (
     <section
@@ -37,105 +31,95 @@ export const BottomGroupRankingSection: React.FC<
                 Bottom Section
               </span>
               <span className="text-xs text-[#666666] font-medium">
-                Company Benchmark (6 Developments)
+                Daily Estate Market Share (Top 10 Towns)
               </span>
             </div>
             <h2 className="text-xl sm:text-2xl font-bold text-[#1B2A4A] mt-1.5 tracking-tight flex items-center gap-2">
               <Target className="w-5 h-5 text-[#C9A961] shrink-0" />
-              <span>Development Group Ranking & Monthly Progress</span>
+              <span>Town-Level Resale Volume Ranking</span>
             </h2>
             <p className="text-xs sm:text-sm text-[#666666] mt-0.5">
-              Ranked by today's closed sales amount with month-to-date target tracking.
+              Ranked by total daily sales amount in {latestMonth || 'latest month'} (simulated single day) to guide branch manpower deployment.
             </p>
           </div>
         </div>
 
-        {/* Manager's Quick Position Callout (Deep Navy Luxury Card) */}
-        {managerDev && (
+        {/* Top Active Town Callout Card (Deep Navy Luxury Card) */}
+        {topTown && (
           <div
-            id="manager-position-summary"
-            className="mt-3.5 p-3.5 rounded-xl bg-[#1B2A4A] text-white shadow-xs border border-[#142038]"
+            id="top-town-summary"
+            onClick={() => onSelectTown(topTown.town)}
+            className="mt-3.5 p-3.5 rounded-xl bg-[#1B2A4A] text-white shadow-xs border border-[#142038] cursor-pointer hover:opacity-95 transition-opacity"
+            title={`Filter transactions by ${topTown.town}`}
           >
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2.5">
                 <span className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-[#C9A961] text-[#1B2A4A] font-black text-sm shadow-xs">
-                  #{managerRank}
+                  #1
                 </span>
                 <div>
-                  <div className="text-[11px] font-semibold text-slate-300 uppercase tracking-wider">
-                    Your Development Position Today
+                  <div className="text-[10px] font-semibold text-slate-300 uppercase tracking-wider flex items-center gap-1">
+                    <Crown className="w-3 h-3 text-[#C9A961]" />
+                    <span>Top Daily Sales Town</span>
                   </div>
                   <div className="font-bold text-sm sm:text-base text-white">
-                    {managerDev.name}
+                    {topTown.town}
                   </div>
                 </div>
               </div>
               <div className="text-right">
-                <div className="text-xs text-slate-300">Daily Sales</div>
+                <div className="text-[11px] text-slate-300">
+                  {topTown.units} Units Sold
+                </div>
                 <div className="text-base sm:text-lg font-extrabold text-[#C9A961] font-mono">
-                  {formatCurrency(managerDev.dailySalesAmount)}
+                  {formatCurrency(topTown.totalValue)}
                 </div>
               </div>
             </div>
 
-            {/* Target Remaining Callout */}
-            <div className="mt-3 pt-2.5 border-t border-white/15 flex items-center justify-between text-xs text-slate-300">
-              <div className="flex items-center gap-1.5">
-                <Flag className="w-3.5 h-3.5 text-[#C9A961] shrink-0" />
-                <span>
-                  Remaining to Monthly Target:{' '}
-                  <strong className="text-white font-semibold font-mono">
-                    {formatCurrency(
-                      managerDev.monthlyTargetAmount - managerDev.monthlyCompletedAmount
-                    )}
-                  </strong>
-                </span>
-              </div>
-              <span className="font-bold text-[#C9A961] font-mono">
-                {(
-                  (managerDev.monthlyCompletedAmount /
-                    managerDev.monthlyTargetAmount) *
-                  100
-                ).toFixed(1)}
-                % Complete
+            <div className="mt-2.5 pt-2 border-t border-white/15 flex items-center justify-between text-xs text-slate-300">
+              <span className="flex items-center gap-1">
+                <TrendingUp className="w-3 h-3 text-[#C9A961]" />
+                Average Price PSF:
+              </span>
+              <span className="font-bold text-white font-mono">
+                {formatPsf(topTown.avgPsf)}
               </span>
             </div>
           </div>
         )}
       </div>
 
-      {/* Development Ranking List */}
+      {/* Town Volume Ranking List (Top 10 towns of the day) */}
       <div className="divide-y divide-[#EBEBEB]">
-        {sortedDevelopments.map((dev, idx) => {
+        {top10Towns.map((item, idx) => {
           const rank = idx + 1;
-          const isOwnDev = dev.isCurrentDevelopment;
+          const isTop = rank === 1;
+          const isSelected = selectedTown === item.town;
           const isEven = idx % 2 === 1;
-          const progressPercent = Math.min(
-            100,
-            (dev.monthlyCompletedAmount / dev.monthlyTargetAmount) * 100
-          );
-          const remainingAmount = dev.monthlyTargetAmount - dev.monthlyCompletedAmount;
 
           return (
             <div
-              key={dev.id}
-              id={`development-rank-row-${dev.id}`}
-              className={`p-3.5 sm:p-4 transition-all ${
-                isOwnDev
+              key={item.town}
+              id={`town-rank-row-${item.town}`}
+              onClick={() => onSelectTown(item.town)}
+              className={`p-3.5 sm:p-4 transition-all cursor-pointer ${
+                isSelected
                   ? 'bg-[#1B2A4A]/8 border-l-4 border-l-[#1B2A4A]'
+                  : isTop
+                  ? 'bg-[#C9A961]/10 hover:bg-[#C9A961]/20 border-l-4 border-l-[#C9A961]'
                   : isEven
                   ? 'bg-[#FAFAFA] hover:bg-[#F0F0F0]'
                   : 'bg-white hover:bg-[#F5F5F5]'
               }`}
             >
-              {/* Top Row: Rank + Name + Daily Sales Amount */}
               <div className="flex items-center justify-between gap-2">
                 <div className="flex items-center gap-2.5">
                   <span
                     className={`inline-flex items-center justify-center w-6 h-6 rounded-full text-xs font-bold shrink-0 ${
-                      rank === 1
+                      isTop
                         ? 'bg-[#C9A961] text-[#1B2A4A] shadow-xs'
-                        : isOwnDev
+                        : isSelected
                         ? 'bg-[#1B2A4A] text-white shadow-xs'
                         : 'bg-[#E5E5E5] text-[#333333]'
                     }`}
@@ -146,67 +130,44 @@ export const BottomGroupRankingSection: React.FC<
                     <div className="flex items-center gap-1.5 flex-wrap">
                       <h4
                         className={`text-sm sm:text-base font-bold ${
-                          isOwnDev ? 'text-[#1B2A4A] font-extrabold' : 'text-[#333333]'
+                          isSelected
+                            ? 'text-[#1B2A4A] font-extrabold'
+                            : 'text-[#333333]'
                         }`}
                       >
-                        {dev.name}
+                        {item.town}
                       </h4>
-                      {isOwnDev && (
-                        <span className="inline-flex items-center gap-0.5 text-[10px] font-extrabold bg-[#1B2A4A] text-white px-2 py-0.5 rounded-full uppercase tracking-wider">
-                          Your Team
+                      {isTop && (
+                        <span className="inline-flex items-center gap-0.5 text-[10px] font-extrabold bg-[#C9A961] text-[#1B2A4A] px-1.5 py-0.2 rounded uppercase tracking-wider">
+                          Market Leader
+                        </span>
+                      )}
+                      {isSelected && (
+                        <span className="inline-flex items-center gap-0.5 text-[10px] font-extrabold bg-[#1B2A4A] text-white px-1.5 py-0.2 rounded uppercase tracking-wider">
+                          Filtered
                         </span>
                       )}
                     </div>
-                    <p className="text-[11px] text-[#666666]">{dev.location}</p>
+                    <p className="text-[11px] text-[#666666] font-mono">
+                      Avg: {formatPsf(item.avgPsf)}
+                    </p>
                   </div>
                 </div>
 
                 <div className="text-right shrink-0">
                   <div className="text-xs text-[#777777] font-medium">
-                    Daily Sales
+                    <strong className="text-[#1B2A4A] font-bold">
+                      {item.units}
+                    </strong>{' '}
+                    {item.units === 1 ? 'unit' : 'units'}
                   </div>
                   <div
                     className={`text-sm sm:text-base font-extrabold font-mono ${
-                      isOwnDev ? 'text-[#1B2A4A]' : 'text-[#333333]'
+                      isSelected ? 'text-[#1B2A4A]' : 'text-[#333333]'
                     }`}
                   >
-                    {formatCurrency(dev.dailySalesAmount)}
+                    {formatCurrency(item.totalValue)}
                   </div>
-                </div>
-              </div>
-
-              {/* Monthly Progress Bar Section */}
-              <div className="mt-3 bg-white p-2.5 rounded-xl border border-[#E5E5E5]">
-                <div className="flex items-center justify-between text-xs mb-1.5">
-                  <span className="text-[#555555] font-medium">
-                    Monthly Target Progress
-                  </span>
-                  <div className="flex items-center gap-1.5 font-mono">
-                    <span className="font-semibold text-[#333333]">
-                      {formatCurrency(dev.monthlyCompletedAmount)} / {formatCurrency(dev.monthlyTargetAmount)}
-                    </span>
-                    <span className="font-bold px-1.5 py-0.5 rounded text-[11px] bg-[#1B2A4A]/10 text-[#1B2A4A]">
-                      {progressPercent.toFixed(1)}%
-                    </span>
-                  </div>
-                </div>
-
-                {/* Progress Bar (Gold fill on Light Gray track #E5E5E5) */}
-                <div className="w-full bg-[#E5E5E5] h-2.5 rounded-full overflow-hidden">
-                  <div
-                    className="h-full rounded-full transition-all duration-500 bg-[#C9A961]"
-                    style={{ width: `${progressPercent}%` }}
-                  />
-                </div>
-
-                {/* Subtext: How much more needed */}
-                <div className="mt-1.5 flex items-center justify-between text-[11px] text-[#666666]">
-                  <span>
-                    Need <strong className="text-[#333333] font-mono">{formatCurrency(remainingAmount)}</strong> more to reach monthly goal
-                  </span>
-                  <span className="text-[#888888] font-mono">
-                    Target: {formatCompactCurrency(dev.monthlyTargetAmount)}
-                  </span>
                 </div>
               </div>
             </div>
