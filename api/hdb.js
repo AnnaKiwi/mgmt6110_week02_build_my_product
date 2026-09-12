@@ -1,11 +1,9 @@
 // api/hdb.js
-// Vercel Serverless Function: Singapore HDB Resale Data Aggregator (Simulated Daily Closing View)
+// Vercel Serverless Function: Singapore HDB Resale Data Aggregator (Monthly Market Intelligence View)
 
 const DATA_GOV_ENDPOINT = 'https://data.gov.sg/api/action/datastore_search';
 const RESOURCE_ID = 'd_8b84c4ee58e3cfc0ece0d773c8ca6abc';
 const SQM_TO_SQFT = 10.7639;
-const DEFAULT_SIMULATED_DAY = 15;
-const DAYS_IN_CYCLE = 28;
 
 function sendJson(res, statusCode, data, headers = {}) {
   res.statusCode = statusCode;
@@ -21,25 +19,13 @@ function sendJson(res, statusCode, data, headers = {}) {
 }
 
 export default async function handler(req, res) {
-  // Support optional query params: `town=` and `day=`
+  // Support optional query param: `town=`
   let townQuery = '';
-  let dayQuery = '';
   try {
     const url = new URL(req.url || '', 'http://localhost');
     townQuery = (req.query?.town || url.searchParams.get('town') || '').trim();
-    dayQuery = (req.query?.day || url.searchParams.get('day') || '').trim();
   } catch {
     townQuery = '';
-    dayQuery = '';
-  }
-
-  // Parse simulated day (defaults to fixed simulated day 15 if omitted)
-  let simulatedDay = DEFAULT_SIMULATED_DAY;
-  if (dayQuery) {
-    const parsed = parseInt(dayQuery, 10);
-    if (!isNaN(parsed) && parsed >= 1 && parsed <= DAYS_IN_CYCLE) {
-      simulatedDay = parsed;
-    }
   }
 
   // Step 1: Detect latest available month (DO NOT use q= free-text search)
@@ -135,12 +121,12 @@ export default async function handler(req, res) {
       {
         success: true,
         month: latestMonth,
-        simulatedDay,
         totalUnits: 0,
         totalValue: 0,
         avgPsf: 0,
         mostActiveTown: 'N/A',
         townRanking: [],
+        regionalSummaries: [],
         records: [],
         filterTown: townQuery || null,
         filteredCount: 0,
@@ -172,39 +158,34 @@ export default async function handler(req, res) {
     };
   });
 
-  // Step 4: Filter to simulated single day slice (CHANGE 1)
-  const dayRecords = parsedRecords.filter(
-    (_, idx) => (idx % DAYS_IN_CYCLE) + 1 === simulatedDay
-  );
-
-  // Step 5: Derive computed metrics ONLY from this simulated single day subset (CHANGE 4)
-  const totalUnits = dayRecords.length;
-  const totalValue = dayRecords.reduce((sum, r) => sum + r.resale_price, 0);
-  const totalSqft = dayRecords.reduce(
+  // Step 4: Derive computed monthly metrics across FULL month of records
+  const totalUnits = parsedRecords.length;
+  const totalValue = parsedRecords.reduce((sum, r) => sum + r.resale_price, 0);
+  const totalSqft = parsedRecords.reduce(
     (sum, r) => sum + r.floor_area_sqm * SQM_TO_SQFT,
     0
   );
   const avgPsf = totalSqft > 0 ? Math.round(totalValue / totalSqft) : 0;
 
-  // Town-level aggregation computed ONLY from this same simulated single day subset
-  const dayTownMap = {};
-  for (const r of dayRecords) {
+  // Town-level aggregation computed from the full month
+  const townMap = {};
+  for (const r of parsedRecords) {
     const t = r.town || 'OTHER';
-    if (!dayTownMap[t]) {
-      dayTownMap[t] = {
+    if (!townMap[t]) {
+      townMap[t] = {
         town: t,
         units: 0,
         totalValue: 0,
         totalSqft: 0,
       };
     }
-    dayTownMap[t].units += 1;
-    dayTownMap[t].totalValue += r.resale_price;
-    dayTownMap[t].totalSqft += r.floor_area_sqm * SQM_TO_SQFT;
+    townMap[t].units += 1;
+    townMap[t].totalValue += r.resale_price;
+    townMap[t].totalSqft += r.floor_area_sqm * SQM_TO_SQFT;
   }
 
-  // CHANGE 3: Rank towns based on that day's total sales amount and limit to TOP 10 towns
-  const townRanking = Object.values(dayTownMap)
+  // Rank towns based on monthly total sales amount and limit to TOP 10 towns
+  const townRanking = Object.values(townMap)
     .map((t) => ({
       town: t.town,
       units: t.units,
@@ -216,15 +197,76 @@ export default async function handler(req, res) {
 
   const mostActiveTown = townRanking[0]?.town || 'N/A';
 
-  // Step 6: Filter transactions if `town=` query param is present
-  let filteredRecords = dayRecords;
+  // Regional Aggregation (CCR, RCR, OCR)
+  const CCR_SET = new Set([
+    'BUKIT TIMAH', 'MARINE PARADE', 'BISHAN', 'TOA PAYOH', 'KALLANG/WHAMPOA',
+    'QUEENSTOWN', 'GEYLANG', 'CLEMENTI', 'SERANGOON', 'NOVENA'
+  ]);
+  const OCR_SET = new Set([
+    'SEMBAWANG', 'SENGKANG', 'PUNGGOL', 'TAMPINES', 'WOODLANDS', 'YISHUN',
+    'BUKIT BATOK', 'CHOA CHU KANG', 'JURONG WEST', 'LIM CHU KANG', 'MANDRAI', 'TENGAH'
+  ]);
+  const RCR_SET = new Set([
+    'ANG MO KIO', 'BEDOK', 'BUKIT MERAH', 'BUKIT PANJANG', 'HOUGANG', 'JURONG EAST', 'PASIR RIS'
+  ]);
+
+  function getRegion(town) {
+    const t = (town || '').trim().toUpperCase();
+    if (CCR_SET.has(t)) return 'CCR';
+    if (OCR_SET.has(t)) return 'OCR';
+    if (RCR_SET.has(t)) return 'RCR';
+    return 'OCR';
+  }
+
+  const regionData = {
+    CCR: { units: 0, totalValue: 0, totalSqft: 0 },
+    RCR: { units: 0, totalValue: 0, totalSqft: 0 },
+    OCR: { units: 0, totalValue: 0, totalSqft: 0 },
+  };
+
+  for (const r of parsedRecords) {
+    const reg = getRegion(r.town);
+    regionData[reg].units += 1;
+    regionData[reg].totalValue += r.resale_price;
+    regionData[reg].totalSqft += r.floor_area_sqm * SQM_TO_SQFT;
+  }
+
+  const regionalSummaries = [
+    {
+      region: 'CCR',
+      name: 'CCR',
+      fullName: 'Core Central Region',
+      units: regionData.CCR.units,
+      totalValue: regionData.CCR.totalValue,
+      avgPsf: regionData.CCR.totalSqft > 0 ? Math.round(regionData.CCR.totalValue / regionData.CCR.totalSqft) : 0,
+    },
+    {
+      region: 'RCR',
+      name: 'RCR',
+      fullName: 'Rest of Central Region',
+      units: regionData.RCR.units,
+      totalValue: regionData.RCR.totalValue,
+      avgPsf: regionData.RCR.totalSqft > 0 ? Math.round(regionData.RCR.totalValue / regionData.RCR.totalSqft) : 0,
+    },
+    {
+      region: 'OCR',
+      name: 'OCR',
+      fullName: 'Outside Central Region',
+      units: regionData.OCR.units,
+      totalValue: regionData.OCR.totalValue,
+      avgPsf: regionData.OCR.totalSqft > 0 ? Math.round(regionData.OCR.totalValue / regionData.OCR.totalSqft) : 0,
+    },
+  ];
+
+  // Step 5: Filter transactions if optional `town=` query param is present
+  let filteredRecords = parsedRecords;
   if (townQuery) {
-    filteredRecords = dayRecords.filter(
+    filteredRecords = parsedRecords.filter(
       (r) => r.town.toUpperCase() === townQuery.toUpperCase()
     );
   }
 
-  // Sort daily transaction records highest-price first so top deal is on top
+  // Sort monthly transaction records highest-price first so top deal is on top
   filteredRecords.sort((a, b) => b.resale_price - a.resale_price);
 
   const filteredTotalValue = filteredRecords.reduce(
@@ -238,12 +280,12 @@ export default async function handler(req, res) {
     {
       success: true,
       month: latestMonth,
-      simulatedDay,
       totalUnits,
       totalValue,
       avgPsf,
       mostActiveTown,
       townRanking,
+      regionalSummaries,
       records: filteredRecords,
       filterTown: townQuery || null,
       filteredCount: filteredRecords.length,
