@@ -101,5 +101,133 @@ Thinking from "where decisions live" and "what the build exposed," and based on 
 > 
 > The department head should require complete prompt iteration logs and code version history for all AI-generated apps, and assign a second maintainer who is not the original author, so the app survives when the author transfers or leaves.
 
+---
+
+
+
+**Student:** Zhang Chenxi· **Course:** MGMT 6110 · **Problem Set 2**
+
+# 1. Product Overview & Data Claims 
+The following metrics were removed entirely, because there is no public, verifiable data source to support them:
+- Individual salesperson rankings and performance metrics
+- Fictional property project comparison data
+- Arbitrary monthly sales targets
+
+Because these data are completely internal data, they need to be manually updated by employees in the company every day.
+
+## 2. Acceptance Criteria
+
+### 2.1 Frontend Criteria
+
+1. **A stranger can tell what this is within a few seconds.**
+- Result: Met
+- Check: The very top of the page has the title, month label, and data source. You don’t have to scroll to work out this is a monthly HDB resale market dashboard for property agency teams.
+
+2. **The main job works without an instruction manual.**
+- Result: Met
+- Check: Regional cards say “Tap card to expand”, the table has a “Show all transactions” button at the bottom, and the tab switch between Transactions and Rankings is obvious. You don’t need someone to explain how to use it.
+
+3. **Every claim on the screen is actually supported by the product.**
+- Result: Met
+- Check: All numbers come from the `/api/hdb` endpoint, nothing is hardcoded or made up. I removed all the metrics from PS1 that had no public data source, like individual salesperson rankings. That matches what the lecture said: a product that claims less, and delivers on everything it does claim, is a better product.
+
+4. **The things most likely to go wrong have a clear way back.**
+- Result: Met
+- Check: Loading, empty results, upstream refusal and no internet each show a different line of text telling the user what’s happening. It doesn’t just show a spinner or go blank.
+
+### 2.2 Backend Criteria
+
+1. **Someone who didn’t build this can tell if the service is up.**
+- Result: Met
+- Check: The `/api/health` endpoint is public. Anyone can open it in a browser and see if the upstream source is working, what month the data is from, and how many records there are. You don’t need to read any code.
+
+2. **Credentials can’t be reached from the page and aren’t in the repository.**
+- Result: N/A
+- Check: The HDB open data API doesn’t need an API key at all, so there’s nothing to leak. There are no secrets hardcoded anywhere in the code or the public GitHub history.
+
+3. **It doesn’t ask for new data more often than the source actually changes.**
+- Result: Not met
+- Check: HDB data only updates once a month, but right now the endpoint pulls fresh data every single time someone loads the page. There’s no caching at all. It’s unnecessary load and could run into rate limits eventually. This is the biggest gap I noticed.
+
+
+# 3. Validation & Error State Testing 
+
+# 4. Reflection: 
+
+## Q1: Where did the agent make you faster, and by how much?
+
+1. Backend API interface development: from 0 to writing api/hdb. js, api/health. js, including requests,Data cleaning, error handling, and ranking aggregation—areas entirely unfamiliar to me, given my lack of a computer science background. Attempting to build this on my own would have been impossible and left me with no clear starting point. Yet, AI generated a functional basic version in just ten minutes.
+
+2. Front-end components and styles: generate transaction tables, area cards, KPI cards, For a responsive layout, if AI is not used, as the developer of this dashboard, I would need to engage a graphic design firm, interact with them, and specify the desired color scheme and module layout.Details such as font size, as well as the specific placement of dropdown menus, require a week to complete—from initial communication through design and revisions—based on my past work experience. In contrast, AI can accomplish this within just a few rounds of prompts.
+
+3. The saved time was used to make product decisions (switching from daily to monthly, removing indicators without data sources, designing incorrect copy), manually verifying data, and adjusting business logic, rather than spending it on writing basic code.
+
+4. It's faster to handle small adjustments yourself: simply remove or edit certain content. If you directly delete or modify things, it feels more natural. Communicating with AI and giving it instructions to make changes can actually be more cumbersome.
+
+---
+
+## Q2: Where did it cost you time, and whose fault was that?
+
+1. The most time-wasting time: simulated daily → monthly rework, mainly my own fault, the requirement was not clear. Initially, to align with the "daily" concept, we had the AI perform a simulated single-day sampling. Later, we realized that HDB only publishes monthly public data, and forcing a daily approach compromised data authenticity. We then reverted to using full-month data, resulting in wasted development and deployment efforts for one iteration.
+
+2. Time wasted due to AI: The region summary logic generated by AI defaults to calculating only the first 15 rows displayed in the table, rather than the full dataset. While the numbers appear reasonable, they are actually incorrect; the discrepancy is only discovered when verifying the total.
+
+**Conclusion:** Rework caused by unclear requirements far exceeds errors inherent to AI itself. Most AI errors are subtle mistakes that appear correct on the surface and require verification using domain-specific knowledge.
+
+---
+
+## Q3: Did it ever hand you something that looked right and was not?
+
+**The most typical one:** simulating daily sampling data
+The AI-generated simulation showed 31 transactions for a single day; the numbers, fields, and rankings all appeared reasonable, and the page rendered correctly, so I initially accepted it without question. After verification, it was discovered that the data was inaccurate: it is impossible for a full month's data to consist of only 31 records, as AI had silently performed sampling without clear labeling.
+
+**Reflection:** Content generated by AI appears "correct" as long as the grammar is accurate and the page runs without errors. However, the authenticity of the data, business logic, and platform rules must be verified by human domain knowledge, not just by whether the page can be opened or not.
+
+---
+
+## Q4: What did you have to know in order to supervise it?
+
+1. Business knowledge: When I learned that the resale data of HDB in Singapore is released on a monthly basis and there is no official daily transaction data, I found that "simulating daily closing prices" is not rigorous in essence, which is the basis for my decision to return to monthly data.
+
+2. Data verification knowledge: I know that the total must be equal to the sum of the sub-items, so I will use the totalUnits interface to verify the sum of the trading volume of the three regions, and found that the regional aggregation only calculated the first 15 items.
+
+I haven't identified the knowledge gaps that need to be filled: the logic of the backend code and the file storage locations. Due to this lack of knowledge, I cannot understand the code, and without understanding its execution logic, I am unable to technically verify AI errors.
+
+---
+
+## Q5: Which decisions did you keep, and should you have kept more or fewer?
+
+1.I clearly reserve the right to make decisions:
+
+**Product positioning:** change from daily simulation to monthly market intelligence dashboard, adhere to the principle of "less commitment, full fulfillment".
+
+**Data selection:** remove salesperson rankings without public data sources, fictional project comparisons, and do not fabricate data.
+
+**Regional classification criteria:** Based on Singapore's official CCR/RCR/OCR standards, not arbitrary divisions made by AI.
+
+**Data source annotation:** All data are clearly annotated as coming from data.gov.sg and explicitly stated to be monthly data.
+The default display of the table is 15 items, and the interaction logic of expanding all items is supported.
+
+2.Decisions that AI quietly made on my behalf:
+
+The table is sorted by total price in descending order by default; the AI handled this directly. Later, I requested to change the sorting to be based on the number of units in descending order.
+The crown icon next to the first-place item and the highlighted price styling were added proactively by the AI.
+
+**Conclusion:** It is essential to retain: product positioning, data authenticity, and data sources—these must never be entrusted to AI.
+It's suitable to delegate to AI: specific component layout and pure code implementation details—AI can handle these more quickly without affecting the product's core functionality.
+**I should keep more:** the definition of data scope. AI can easily perform sampling and apply default sorting without informing you, which undermines the product's credibility.
+
+---
+
+## Q6：Now scale it up: what does this mean for a team of thirty? 
+
+When everyone only looks at their own module, it is easy to make the mistake of "locally correct but globally incorrect", which will cause the data interface of each part to be unable to connect, resulting in the product not working normally.
+
+If a 30-person team collaborates on developing a core product using AI, I would establish three non-negotiable rules and require the project lead to sign off before implementation.
+First, all code and copy generated by AI must undergo human business validation before submission: data definitions must align with official data sources, and erroneous copy or user statements must be confirmed by product managers. Under no circumstances should AI-generated content be deployed directly without this review.
+
+Second, establish a daily code review mechanism, requiring employees to move data and code, Check for existing risks, such as whether secrets and sensitive information appear in the code, whether API file locations and deployment configurations are correct, and whether any undisclosed logic has been quietly introduced by AI (e.g., default sampling or default sorting). 
+
+Third, all prompts and iteration records must be archived, and each function must have a clear human decision-maker; Decisions related to product positioning, data authenticity, compliance requirements, and user right to know must not be made autonomously by AI. 
 
 
