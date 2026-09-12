@@ -1,5 +1,5 @@
-import React from 'react';
-import { Building2, Crown, Filter, TrendingUp, X } from 'lucide-react';
+import React, { useState } from 'react';
+import { Building2, ChevronDown, ChevronUp, Crown, Filter, TrendingUp, X } from 'lucide-react';
 import { formatCurrency, formatPsf } from '../data';
 import { HdbTransaction } from '../types';
 
@@ -22,9 +22,13 @@ export const TopTransactionsSection: React.FC<TopTransactionsSectionProps> = ({
   onClearFilter,
   onSelectTown,
 }) => {
+  const [showAll, setShowAll] = useState(false);
   const isFiltered = Boolean(selectedTown);
-  const currentCount = transactions.length;
-  const currentTotalAmount = transactions.reduce(
+
+  // By default, show only the TOP 15 transactions sorted by total price (high to low)
+  const visibleTransactions = showAll ? transactions : transactions.slice(0, 15);
+  const visibleCount = visibleTransactions.length;
+  const visibleTotalAmount = visibleTransactions.reduce(
     (sum, tx) => sum + tx.resale_price,
     0
   );
@@ -40,18 +44,18 @@ export const TopTransactionsSection: React.FC<TopTransactionsSectionProps> = ({
           <div>
             <div className="flex items-center gap-2">
               <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-[#1B2A4A]/10 text-[#1B2A4A] border border-[#1B2A4A]/20">
-                Top Section
+                Monthly Transactions
               </span>
               <span className="text-xs text-[#666666] font-medium">
-                Simulated Daily Closing | Source: HDB {latestMonth || '2026-09'} Monthly Dataset
+                Official Monthly Dataset | {latestMonth || '2026-09'}
               </span>
             </div>
             <h2 className="text-xl sm:text-2xl font-bold text-[#1B2A4A] mt-1.5 tracking-tight flex items-center gap-2">
               <Building2 className="w-5 h-5 text-[#C9A961] shrink-0" />
-              <span>HDB Resale Transaction Details</span>
+              <span>Top HDB Resale Transactions</span>
             </h2>
             <p className="text-xs sm:text-sm text-[#666666] mt-0.5">
-              Simulated daily subset extracted from official HDB monthly resale dataset, for branch estate advisory.
+              Official HDB monthly resale records, sorted by total price. Source: data.gov.sg
             </p>
           </div>
         </div>
@@ -64,7 +68,7 @@ export const TopTransactionsSection: React.FC<TopTransactionsSectionProps> = ({
               <span>
                 Filtered by Town:{' '}
                 <strong className="font-bold text-[#1B2A4A]">{selectedTown}</strong>{' '}
-                ({currentCount} of {allTransactionsCount} units)
+                ({transactions.length} of {allTransactionsCount} units)
               </span>
             </div>
             <button
@@ -73,7 +77,7 @@ export const TopTransactionsSection: React.FC<TopTransactionsSectionProps> = ({
               className="inline-flex items-center gap-1 font-bold text-[#1B2A4A] hover:bg-[#1B2A4A]/10 bg-white px-2.5 py-1 rounded-lg border border-[#1B2A4A]/20 transition-colors"
             >
               <X className="w-3.5 h-3.5" />
-              <span>Show All</span>
+              <span>Show All Towns</span>
             </button>
           </div>
         )}
@@ -81,7 +85,9 @@ export const TopTransactionsSection: React.FC<TopTransactionsSectionProps> = ({
 
       {/* Subheader Title */}
       <div className="px-4 sm:px-5 py-2.5 bg-[#F5F5F5] border-b border-[#E5E5E5] flex items-center justify-between text-xs font-bold text-[#1B2A4A] uppercase tracking-wider">
-        <span>Daily Resale Records ({currentCount} units)</span>
+        <span>
+          Showing {visibleCount} of {transactions.length} Transactions
+        </span>
         <span className="text-[#888888] font-normal normal-case text-[11px]">
           Sorted by Price (High → Low)
         </span>
@@ -105,7 +111,7 @@ export const TopTransactionsSection: React.FC<TopTransactionsSectionProps> = ({
                 Area(sqm)
               </th>
               <th scope="col" className="w-14 sm:w-16 py-2 px-1 text-right">
-                S$ psf
+                S$ PSF
               </th>
               <th scope="col" className="w-32 sm:w-36 py-2 pr-3.5 pl-1 text-right">
                 Total S$
@@ -113,7 +119,7 @@ export const TopTransactionsSection: React.FC<TopTransactionsSectionProps> = ({
             </tr>
           </thead>
           <tbody className="divide-y divide-[#EBEBEB] text-[11px] sm:text-xs">
-            {transactions.length === 0 ? (
+            {visibleTransactions.length === 0 ? (
               <tr>
                 <td colSpan={6} className="py-8 px-4 text-center text-[#666666]">
                   <p className="font-medium text-xs">
@@ -130,7 +136,7 @@ export const TopTransactionsSection: React.FC<TopTransactionsSectionProps> = ({
                 </td>
               </tr>
             ) : (
-              transactions.map((tx, idx) => {
+              visibleTransactions.map((tx, idx) => {
                 const isTopDeal = idx === 0;
                 const isEven = idx % 2 === 1;
 
@@ -179,13 +185,13 @@ export const TopTransactionsSection: React.FC<TopTransactionsSectionProps> = ({
                       ${tx.psf.toLocaleString('en-SG')}
                     </td>
 
-                    {/* Total S$ Column (Right-aligned, bold, crown on top deal of this day) */}
+                    {/* Total S$ Column (Right-aligned, bold, crown on top deal of this month) */}
                     <td className="py-1.5 pr-3.5 pl-1 text-right align-middle font-mono font-bold text-[#1B2A4A] whitespace-nowrap">
                       <div className="inline-flex items-center justify-end gap-1.5">
                         {isTopDeal && (
                           <Crown
                             className="w-3.5 h-3.5 text-[#C9A961] fill-[#C9A961] shrink-0"
-                            title="Highest Price Transaction of the Day"
+                            title="Highest Price Transaction of the Month"
                           />
                         )}
                         <span>{formatCurrency(tx.resale_price)}</span>
@@ -199,7 +205,30 @@ export const TopTransactionsSection: React.FC<TopTransactionsSectionProps> = ({
         </table>
       </div>
 
-      {/* Summary Total Row at Bottom (Navy styling, calculated only for this day's records) */}
+      {/* Expand / Collapse Button: Shows Top 15 vs Full Monthly Dataset */}
+      {transactions.length > 15 && (
+        <div className="p-3 bg-[#FAFAFA] border-t border-[#E5E5E5] text-center">
+          <button
+            id="toggle-show-all-transactions-btn"
+            onClick={() => setShowAll((prev) => !prev)}
+            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-bold text-[#1B2A4A] bg-white hover:bg-[#1B2A4A]/5 border border-[#1B2A4A]/20 shadow-2xs transition-colors"
+          >
+            {showAll ? (
+              <>
+                <ChevronUp className="w-3.5 h-3.5 text-[#1B2A4A]" />
+                <span>Show top 15 only</span>
+              </>
+            ) : (
+              <>
+                <ChevronDown className="w-3.5 h-3.5 text-[#1B2A4A]" />
+                <span>Show all transactions</span>
+              </>
+            )}
+          </button>
+        </div>
+      )}
+
+      {/* Summary Total Row at Bottom (Numbers strictly match visible dataset: top 15 or full month) */}
       <div
         id="transactions-totals-summary"
         className="p-3.5 sm:p-4 bg-[#1B2A4A] text-white border-t border-[#142038]"
@@ -208,40 +237,46 @@ export const TopTransactionsSection: React.FC<TopTransactionsSectionProps> = ({
           <div className="flex items-center gap-1.5">
             <TrendingUp className="w-3.5 h-3.5 text-[#C9A961]" />
             <h3 className="text-[11px] sm:text-xs font-bold tracking-wide text-slate-200 uppercase">
-              {isFiltered ? `${selectedTown} Daily Volume Summary` : 'Daily HDB Closing Market Total'}
+              {isFiltered
+                ? `${selectedTown} Monthly Volume Summary`
+                : showAll
+                ? 'Monthly HDB Resale Market Total'
+                : 'Top 15 Visible Transactions Total'}
             </h3>
           </div>
           <span className="text-[10px] font-mono bg-white/10 text-slate-200 px-2 py-0.5 rounded border border-white/20">
-            Daily Closing
+            {showAll ? 'Full Month' : 'Top 15 Visible'}
           </span>
         </div>
 
         <div className="grid grid-cols-2 gap-2.5">
           <div className="bg-white/10 p-2.5 rounded-lg border border-white/15">
             <div className="text-[11px] text-slate-300 font-medium">
-              Total Units Sold Today
+              {showAll ? 'Total Units Sold' : 'Visible Units'}
             </div>
             <div className="text-xl sm:text-2xl font-extrabold text-white mt-0.5 font-mono">
-              {currentCount.toLocaleString('en-SG')}{' '}
+              {visibleCount.toLocaleString('en-SG')}{' '}
               <span className="text-xs font-normal text-slate-300 font-sans">units</span>
             </div>
-            {isFiltered && (
-              <div className="text-[10px] text-slate-300 mt-0.5">
-                of {allTransactionsCount.toLocaleString('en-SG')} total day units
-              </div>
-            )}
+            <div className="text-[10px] text-slate-300 mt-0.5">
+              {showAll
+                ? isFiltered
+                  ? `of ${allTransactionsCount.toLocaleString('en-SG')} total monthly units`
+                  : 'all monthly units'
+                : `of ${transactions.length.toLocaleString('en-SG')} available transactions`}
+            </div>
           </div>
 
           <div className="bg-white/10 p-2.5 rounded-lg border border-white/15">
             <div className="text-[11px] text-slate-300 font-medium">
-              Total Daily Transaction Value
+              {showAll ? 'Total Monthly Value' : 'Visible Transaction Value'}
             </div>
             <div className="text-lg sm:text-xl font-extrabold text-[#C9A961] mt-0.5 tracking-tight font-mono">
-              {formatCurrency(currentTotalAmount)}
+              {formatCurrency(visibleTotalAmount)}
             </div>
-            {isFiltered && (
+            {!showAll && (
               <div className="text-[10px] text-slate-300 mt-0.5 font-mono">
-                Day total: {formatCurrency(totalMarketAmount)}
+                Full total: {formatCurrency(totalMarketAmount)}
               </div>
             )}
           </div>

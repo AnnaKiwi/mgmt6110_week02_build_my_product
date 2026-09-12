@@ -20,18 +20,37 @@ export interface TownRankingItem {
 export interface HdbApiResponse {
   success: boolean;
   month: string;
-  simulatedDay?: number;
   totalUnits: number;
   totalValue: number;
   avgPsf: number;
   mostActiveTown: string;
   townRanking: TownRankingItem[];
+  regionalSummaries?: RegionSummary[];
   records: HdbTransaction[];
   filterTown: string | null;
   filteredCount: number;
   filteredTotalValue: number;
   errorType?: 'loading' | 'empty' | 'rejected' | 'unreachable';
   error?: string;
+}
+
+export type PropertyRegion = 'CCR' | 'RCR' | 'OCR';
+
+export interface RegionTownItem {
+  town: string;
+  units: number;
+  totalValue: number;
+  avgPsf: number;
+}
+
+export interface RegionSummary {
+  region: PropertyRegion;
+  name: string;
+  fullName: string;
+  units: number;
+  totalValue: number;
+  avgPsf: number;
+  topTowns?: RegionTownItem[];
 }
 
 export type ViewState = 'loading' | 'success' | 'empty' | 'rejected' | 'unreachable';

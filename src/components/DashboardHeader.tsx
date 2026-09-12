@@ -27,7 +27,7 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
                 HDB Resale Market Dashboard
               </h1>
               <p className="text-[11px] text-[#666666] font-medium leading-none mt-0.5">
-                Multi-Branch Property Agency Management
+                Multi-Branch Property Agency Market Intelligence
               </p>
             </div>
           </div>
@@ -35,7 +35,7 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
           {/* Real-time Status Badge with Navy Styling */}
           <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#1B2A4A]/10 text-[#1B2A4A] border border-[#1B2A4A]/20 text-xs font-semibold">
             <span className="w-2 h-2 rounded-full bg-[#C9A961] animate-pulse"></span>
-            <span>{latestMonth ? `Simulated Day within ${latestMonth}` : 'Official Open Data'}</span>
+            <span>{latestMonth ? `Month: ${latestMonth}` : 'Official Open Data'}</span>
           </div>
         </div>
 

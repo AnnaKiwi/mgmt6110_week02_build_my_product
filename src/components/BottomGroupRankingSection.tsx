@@ -27,11 +27,8 @@ export const BottomGroupRankingSection: React.FC<
         <div className="flex items-start justify-between gap-3">
           <div>
             <div className="flex items-center gap-2">
-              <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-[#1B2A4A]/10 text-[#1B2A4A] border border-[#1B2A4A]/20">
-                Bottom Section
-              </span>
               <span className="text-xs text-[#666666] font-medium">
-                Daily Estate Market Share (Top 10 Towns)
+                Monthly Estate Market Share (Top 10 Towns)
               </span>
             </div>
             <h2 className="text-xl sm:text-2xl font-bold text-[#1B2A4A] mt-1.5 tracking-tight flex items-center gap-2">
@@ -39,7 +36,7 @@ export const BottomGroupRankingSection: React.FC<
               <span>Town-Level Resale Volume Ranking</span>
             </h2>
             <p className="text-xs sm:text-sm text-[#666666] mt-0.5">
-              Ranked by total daily sales amount in {latestMonth || 'latest month'} (simulated single day) to guide branch manpower deployment.
+              Ranked by total monthly sales amount. Data: HDB {latestMonth || '2026-09'} monthly dataset.
             </p>
           </div>
         </div>
@@ -60,7 +57,7 @@ export const BottomGroupRankingSection: React.FC<
                 <div>
                   <div className="text-[10px] font-semibold text-slate-300 uppercase tracking-wider flex items-center gap-1">
                     <Crown className="w-3 h-3 text-[#C9A961]" />
-                    <span>Top Daily Sales Town</span>
+                    <span>Top Monthly Sales Town</span>
                   </div>
                   <div className="font-bold text-sm sm:text-base text-white">
                     {topTown.town}
