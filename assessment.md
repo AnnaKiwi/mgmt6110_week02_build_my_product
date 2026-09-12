@@ -150,9 +150,7 @@ Because these data are completely internal data, they need to be manually update
 - Check: HDB data only updates once a month, but right now the endpoint pulls fresh data every single time someone loads the page. There’s no caching at all. It’s unnecessary load and could run into rate limits eventually. This is the biggest gap I noticed.
 
 
-# 3. Validation & Error State Testing 
-
-# 4. Reflection: 
+# 3. Reflection: 
 
 ## Q1: Where did the agent make you faster, and by how much?
 
