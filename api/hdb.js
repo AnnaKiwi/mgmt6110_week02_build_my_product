@@ -2,7 +2,7 @@
 // Vercel Serverless Function: Singapore HDB Resale Data Aggregator (Monthly Market Intelligence View)
 
 const DATA_GOV_ENDPOINT = 'https://data.gov.sg/api/action/datastore_search';
-const RESOURCE_ID = 'd_8b84c4ee58e3cfc0ece0d773c8ca6abc';
+const RESOURCE_ID = 'd_8b84c4ee58e3cfc0ece0d773c8ca6a';
 const SQM_TO_SQFT = 10.7639;
 
 function sendJson(res, statusCode, data, headers = {}) {
