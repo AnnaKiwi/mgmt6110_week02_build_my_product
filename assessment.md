@@ -100,8 +100,9 @@ Thinking from "where decisions live" and "what the build exposed," and based on 
 
 > 
 > The department head should require complete prompt iteration logs and code version history for all AI-generated apps, and assign a second maintainer who is not the original author, so the app survives when the author transfers or leaves.
-
 ---
+
+
 
 
 
@@ -149,8 +150,29 @@ Because these data are completely internal data, they need to be manually update
 - Result: Not met
 - Check: HDB data only updates once a month, but right now the endpoint pulls fresh data every single time someone loads the page. There’s no caching at all. It’s unnecessary load and could run into rate limits eventually. This is the biggest gap I noticed.
 
+# 3. Validation & Error State Testing:
 
-# 3. Reflection: 
+### ①. Loading state
+- What I did: I throttled the network to 3G in Chrome DevTools, disabled cache, and refreshed the live Vercel page.
+- What I saw: The page showed a clear loading message before the data rendered, instead of only showing a spinner.
+- Result: Met
+
+### ②. Empty dataset
+- What I did: Called the API with a non-existent town name (`NONEXISTENT_TOWN`) to force zero matching records.
+- What I saw: The API returned a clean structured response with 0 records, and the frontend showed an empty-state message instead of going blank.
+- Result: Met
+
+### ③. Upstream service refusal
+- What I did: I intentionally replaced the HDB resource ID in `api/hdb.js` with an invalid string, committed it, and redeployed to Vercel.
+- What I saw: The dashboard showed a clear error message about the upstream service refusing the request, instead of crashing or showing a blank screen.
+- Result: Met
+
+### ④. Upstream unreachable
+- What I did: Intentionally changed the `data.gov.sg` hostname to a non-existent domain, committed and redeployed.
+- What I saw: The page displayed a clear error message and did not crash. The error wording is similar to the refusal case, which is a minor limitation — the two failure modes are not visually distinguished for the user.
+- Result: Partly met
+
+# 4. Reflection: 
 
 ## Q1: Where did the agent make you faster, and by how much?
 
