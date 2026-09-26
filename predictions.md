@@ -1,9 +1,10 @@
 ## 1. My product
 - Live address: https://mgmt6110-week02-build-my-product.vercel.app
-- Who it is for, and the one job it does for them: For agents and managers
-  at a multi-branch property agency, it gives a one-screen monthly overview
-  of the Singapore HDB resale market — total units sold, prices and town
-  rankings.
+- Who it is for, and the one job it does for them: For managers at a
+  multi-branch property agency, it turns the monthly data.gov.sg HDB
+  resale dataset into a one-screen market overview broken down by region
+  and town, so they can see which areas are selling and set their sales
+  strategy without reading the raw official records.
 - Health check from Step 1, on Friday 25 September 2026 at [TIME]:
   /api/health returned {"status":"ok","upstreamStatus":200,
   "latestMonth":"2026-09","latestMonthRecordCount":1788}.
