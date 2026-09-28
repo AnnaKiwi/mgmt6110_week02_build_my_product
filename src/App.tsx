@@ -280,7 +280,7 @@ export default function App() {
               id="executive-monthly-summary"
               className="bg-white rounded-2xl p-4 border border-[#E5E5E5] shadow-xs"
             >
-              <div className="flex items-center justify-between pb-3 border-b border-[#F0F0F0]">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pb-3 border-b border-[#F0F0F0]">
                 <div>
                   <div className="text-xs font-bold text-[#666666] uppercase tracking-wider">
                     Singapore HDB Resale Monthly Market Overview
@@ -289,10 +289,10 @@ export default function App() {
                     Multi-Branch Property Agency Market Intelligence
                   </div>
                 </div>
-                <div className="text-right">
-                  <span className="inline-flex items-center gap-1 text-[11px] font-bold text-[#1B2A4A] bg-[#1B2A4A]/10 px-2.5 py-0.5 rounded-full border border-[#1B2A4A]/20">
-                    <Calendar className="w-3 h-3 text-[#1B2A4A]" />
-                    Month: {data.month || '2026-09'}
+                <div className="sm:text-right">
+                  <span className="inline-flex items-center gap-1.5 text-[11px] font-bold text-[#1B2A4A] bg-[#1B2A4A]/10 px-2.5 py-1 rounded-full border border-[#1B2A4A]/20">
+                    <Calendar className="w-3.5 h-3.5 text-[#1B2A4A] shrink-0" />
+                    <span>Official HDB Monthly Resale Dataset · Month: {data.month || '2026-09'}</span>
                   </span>
                   <div className="text-[10px] text-[#888888] mt-0.5 font-mono">
                     Source: data.gov.sg
@@ -560,3 +560,4 @@ export default function App() {
     </div>
   );
 }
+
