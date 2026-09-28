@@ -15,7 +15,7 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
       id="dashboard-header"
       className="bg-white border-b border-[#E5E5E5] sticky top-0 z-30 shadow-xs"
     >
-      <div className="max-w-xl mx-auto px-4 py-3">
+      <div className="max-w-3xl mx-auto px-4 py-3">
         {/* Top Status Line */}
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-2.5">

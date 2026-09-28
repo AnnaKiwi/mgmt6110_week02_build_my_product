@@ -166,7 +166,7 @@ export default function App() {
         onScrollToSection={handleScrollToSection}
       />
 
-      <main className="max-w-xl mx-auto px-3.5 sm:px-4 pt-3.5 space-y-4">
+      <main className="max-w-3xl mx-auto px-3.5 sm:px-4 pt-3.5 space-y-4">
         {/* State A: Loading State */}
         {viewState === 'loading' && (
           <div

@@ -260,25 +260,28 @@ export const TopTransactionsSection: React.FC<TopTransactionsSectionProps> = ({
 
       {/* Compact Data Table (6 columns: Town | Flat Type | Block-Street | Area(sqm) | S$ psf | Total S$) */}
       <div className="overflow-x-auto">
-        <table className="w-full min-w-[580px] text-left border-collapse table-fixed">
+        <table className="w-full min-w-[580px] sm:min-w-0 text-left border-collapse table-fixed">
           <thead>
             <tr className="bg-[#1B2A4A] text-white text-[10px] sm:text-[11px] font-bold uppercase tracking-wider border-b border-[#1B2A4A]">
-              <th scope="col" className="w-24 sm:w-28 py-2 pl-3 pr-1 text-left">
+              <th
+                scope="col"
+                className="sticky left-0 z-20 bg-[#1B2A4A] w-32 sm:w-36 py-2 pl-3 pr-2 text-left border-r border-[#2A3B5C] border-l-4 border-l-transparent"
+              >
                 Town
               </th>
-              <th scope="col" className="w-14 sm:w-16 py-2 px-1 text-left">
+              <th scope="col" className="w-20 sm:w-24 py-2 px-1.5 text-left whitespace-nowrap">
                 Flat Type
               </th>
-              <th scope="col" className="w-auto py-2 px-1 text-left">
+              <th scope="col" className="w-auto min-w-[130px] sm:min-w-[160px] py-2 px-1.5 text-left">
                 Block-Street
               </th>
-              <th scope="col" className="w-12 sm:w-14 py-2 px-1 text-right">
+              <th scope="col" className="w-16 sm:w-20 py-2 px-1 text-right whitespace-nowrap">
                 Area(sqm)
               </th>
-              <th scope="col" className="w-14 sm:w-16 py-2 px-1 text-right">
+              <th scope="col" className="w-16 sm:w-20 py-2 px-1 text-right whitespace-nowrap">
                 S$ PSF
               </th>
-              <th scope="col" className="w-32 sm:w-36 py-2 pr-3.5 pl-1 text-right">
+              <th scope="col" className="w-32 sm:w-36 py-2 pr-3.5 pl-1 text-right whitespace-nowrap">
                 Total S$
               </th>
             </tr>
@@ -311,19 +314,27 @@ export const TopTransactionsSection: React.FC<TopTransactionsSectionProps> = ({
                   <tr
                     key={tx.id}
                     id={`transaction-row-${tx.id}`}
-                    className={`transition-colors ${
+                    className={`group transition-colors ${
                       isTopDeal
-                        ? 'bg-[#C9A961]/20 border-l-4 border-l-[#C9A961] font-semibold'
+                        ? 'bg-[#F7F3E9] hover:bg-[#EFE7D3] font-semibold'
                         : isEven
                         ? 'bg-[#F5F5F5] hover:bg-[#EBEBEB]'
                         : 'bg-white hover:bg-[#F5F5F5]'
                     }`}
                   >
-                    {/* Town Column */}
-                    <td className="py-1.5 pl-3 pr-1 align-middle">
+                    {/* Town Column (Sticky on mobile and desktop, solid background matching row, z-index 10) */}
+                    <td
+                      className={`sticky left-0 z-10 py-1.5 pl-3 pr-2 align-middle border-r border-[#E5E5E5] ${
+                        isTopDeal
+                          ? 'border-l-4 border-l-[#C9A961] bg-[#F7F3E9] group-hover:bg-[#EFE7D3]'
+                          : isEven
+                          ? 'border-l-4 border-l-transparent bg-[#F5F5F5] group-hover:bg-[#EBEBEB]'
+                          : 'border-l-4 border-l-transparent bg-white group-hover:bg-[#F5F5F5]'
+                      }`}
+                    >
                       <button
                         onClick={() => onSelectTown(tx.town)}
-                        className="font-bold text-[#1B2A4A] hover:text-[#C9A961] hover:underline whitespace-nowrap block text-left cursor-pointer"
+                        className="font-bold text-[#1B2A4A] hover:text-[#C9A961] hover:underline truncate block text-left cursor-pointer w-full"
                         title={`Filter by ${tx.town}`}
                       >
                         {tx.town}
@@ -331,12 +342,12 @@ export const TopTransactionsSection: React.FC<TopTransactionsSectionProps> = ({
                     </td>
 
                     {/* Flat Type Column */}
-                    <td className="py-1.5 px-1 align-middle text-[#555555] truncate whitespace-nowrap">
+                    <td className="py-1.5 px-1.5 align-middle text-[#555555] truncate whitespace-nowrap">
                       {tx.flat_type}
                     </td>
 
                     {/* Block-Street Column */}
-                    <td className="py-1.5 px-1 align-middle text-[#333333] truncate">
+                    <td className="py-1.5 px-1.5 align-middle text-[#333333] truncate">
                       <span className="truncate block" title={`Blk ${tx.block} ${tx.street_name}`}>
                         {tx.block} {tx.street_name}
                       </span>
