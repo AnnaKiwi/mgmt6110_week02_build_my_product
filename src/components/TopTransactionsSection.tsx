@@ -360,7 +360,7 @@ export const TopTransactionsSection: React.FC<TopTransactionsSectionProps> = ({
 
                     {/* S$ psf Column */}
                     <td className="py-1.5 px-1 text-right align-middle text-[#666666] whitespace-nowrap font-mono">
-                      ${tx.psf.toLocaleString('en-SG')}
+                      S${tx.psf.toLocaleString('en-SG')}
                     </td>
 
                     {/* Total S$ Column (Right-aligned, bold, crown on top deal of this month) */}
