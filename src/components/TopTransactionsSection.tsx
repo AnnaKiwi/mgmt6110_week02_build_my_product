@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Building2, ChevronDown, ChevronUp, Crown, Filter, TrendingUp, X } from 'lucide-react';
 import { formatCurrency, formatPsf } from '../data';
 import { HdbTransaction } from '../types';
@@ -10,8 +10,22 @@ interface TopTransactionsSectionProps {
   selectedTown: string | null;
   latestMonth: string;
   onClearFilter: () => void;
-  onSelectTown: (town: string) => void;
+  onSelectTown: (town: string | null) => void;
 }
+
+interface PriceOption {
+  value: string;
+  label: string;
+  test: (price: number) => boolean;
+}
+
+const PRICE_OPTIONS: PriceOption[] = [
+  { value: '', label: 'All Prices', test: () => true },
+  { value: 'under-500k', label: 'Under S$500,000', test: (p) => p < 500000 },
+  { value: '500k-800k', label: 'S$500,000 – S$800,000', test: (p) => p >= 500000 && p <= 800000 },
+  { value: '800k-1m', label: 'S$800,000 – S$1,000,000', test: (p) => p > 800000 && p <= 1000000 },
+  { value: 'over-1m', label: 'Over S$1,000,000', test: (p) => p > 1000000 },
+];
 
 export const TopTransactionsSection: React.FC<TopTransactionsSectionProps> = ({
   transactions,
@@ -23,12 +37,76 @@ export const TopTransactionsSection: React.FC<TopTransactionsSectionProps> = ({
   onSelectTown,
 }) => {
   const [showAll, setShowAll] = useState(false);
-  const isFiltered = Boolean(selectedTown);
+  const [selectedFlatType, setSelectedFlatType] = useState<string>('');
+  const [selectedPriceRange, setSelectedPriceRange] = useState<string>('');
+
+  // Extract all unique towns in dataset in alphabetical order
+  const allTowns = useMemo(() => {
+    const towns = new Set<string>();
+    transactions.forEach((tx) => {
+      if (tx.town) towns.add(tx.town);
+    });
+    return Array.from(towns).sort((a, b) => a.localeCompare(b));
+  }, [transactions]);
+
+  // Extract all unique flat types in dataset
+  const allFlatTypes = useMemo(() => {
+    const types = new Set<string>();
+    transactions.forEach((tx) => {
+      if (tx.flat_type) types.add(tx.flat_type);
+    });
+    return Array.from(types).sort((a, b) => a.localeCompare(b));
+  }, [transactions]);
+
+  // Combined AND filtering for Town, Flat Type, and Price Range
+  const filteredTransactions = useMemo(() => {
+    const activePriceOpt = PRICE_OPTIONS.find((p) => p.value === selectedPriceRange);
+
+    const list = transactions.filter((tx) => {
+      if (selectedTown && tx.town.toUpperCase() !== selectedTown.toUpperCase()) {
+        return false;
+      }
+      if (selectedFlatType && tx.flat_type !== selectedFlatType) {
+        return false;
+      }
+      if (activePriceOpt && activePriceOpt.value && !activePriceOpt.test(tx.resale_price)) {
+        return false;
+      }
+      return true;
+    });
+
+    return list.sort((a, b) => b.resale_price - a.resale_price);
+  }, [transactions, selectedTown, selectedFlatType, selectedPriceRange]);
+
+  const isFiltered = Boolean(selectedTown || selectedFlatType || selectedPriceRange);
+
+  // Build active filter labels for the banner
+  const activeFilterLabels: string[] = [];
+  if (selectedTown) activeFilterLabels.push(selectedTown);
+  if (selectedFlatType) activeFilterLabels.push(selectedFlatType);
+  if (selectedPriceRange) {
+    const opt = PRICE_OPTIONS.find((p) => p.value === selectedPriceRange);
+    if (opt && opt.value) activeFilterLabels.push(opt.label);
+  }
+
+  const bannerPrefix = selectedTown ? 'Filtered by Town:' : 'Filtered by:';
+
+  const handleClearAllFilters = () => {
+    onClearFilter();
+    setSelectedFlatType('');
+    setSelectedPriceRange('');
+  };
 
   // By default, show only the TOP 15 transactions sorted by total price (high to low)
-  const visibleTransactions = showAll ? transactions : transactions.slice(0, 15);
+  const visibleTransactions = showAll
+    ? filteredTransactions
+    : filteredTransactions.slice(0, 15);
   const visibleCount = visibleTransactions.length;
   const visibleTotalAmount = visibleTransactions.reduce(
+    (sum, tx) => sum + tx.resale_price,
+    0
+  );
+  const filteredTotalAmount = filteredTransactions.reduce(
     (sum, tx) => sum + tx.resale_price,
     0
   );
@@ -60,24 +138,111 @@ export const TopTransactionsSection: React.FC<TopTransactionsSectionProps> = ({
           </div>
         </div>
 
-        {/* Filter Alert Banner if town is filtered */}
+        {/* 3 Filter Dropdowns: Town, Flat Type, Price Range */}
+        <div className="mt-4 pt-3.5 border-t border-[#EBEBEB]">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+            {/* 1. Town Selector */}
+            <div className="w-full">
+              <label
+                htmlFor="filter-town-select"
+                className="block text-[11px] font-bold text-[#1B2A4A] mb-1"
+              >
+                Town
+              </label>
+              <div className="relative">
+                <select
+                  id="filter-town-select"
+                  aria-label="Filter by town"
+                  value={selectedTown || ''}
+                  onChange={(e) => onSelectTown(e.target.value || null)}
+                  className="w-full appearance-none text-xs sm:text-sm font-medium text-[#1B2A4A] bg-white border border-[#D1D5DB] rounded-lg pl-3 pr-8 py-2 focus:outline-hidden focus:ring-2 focus:ring-[#1B2A4A]/20 focus:border-[#1B2A4A] transition-colors cursor-pointer"
+                >
+                  <option value="">All Towns</option>
+                  {allTowns.map((town) => (
+                    <option key={town} value={town}>
+                      {town}
+                    </option>
+                  ))}
+                </select>
+                <ChevronDown className="w-4 h-4 text-[#666666] absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+              </div>
+            </div>
+
+            {/* 2. Flat Type Selector */}
+            <div className="w-full">
+              <label
+                htmlFor="filter-flat-type-select"
+                className="block text-[11px] font-bold text-[#1B2A4A] mb-1"
+              >
+                Flat Type
+              </label>
+              <div className="relative">
+                <select
+                  id="filter-flat-type-select"
+                  aria-label="Filter by flat type"
+                  value={selectedFlatType}
+                  onChange={(e) => setSelectedFlatType(e.target.value)}
+                  className="w-full appearance-none text-xs sm:text-sm font-medium text-[#1B2A4A] bg-white border border-[#D1D5DB] rounded-lg pl-3 pr-8 py-2 focus:outline-hidden focus:ring-2 focus:ring-[#1B2A4A]/20 focus:border-[#1B2A4A] transition-colors cursor-pointer"
+                >
+                  <option value="">All Flat Types</option>
+                  {allFlatTypes.map((ft) => (
+                    <option key={ft} value={ft}>
+                      {ft}
+                    </option>
+                  ))}
+                </select>
+                <ChevronDown className="w-4 h-4 text-[#666666] absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+              </div>
+            </div>
+
+            {/* 3. Price Range Selector */}
+            <div className="w-full">
+              <label
+                htmlFor="filter-price-select"
+                className="block text-[11px] font-bold text-[#1B2A4A] mb-1"
+              >
+                Price
+              </label>
+              <div className="relative">
+                <select
+                  id="filter-price-select"
+                  aria-label="Filter by price"
+                  value={selectedPriceRange}
+                  onChange={(e) => setSelectedPriceRange(e.target.value)}
+                  className="w-full appearance-none text-xs sm:text-sm font-medium text-[#1B2A4A] bg-white border border-[#D1D5DB] rounded-lg pl-3 pr-8 py-2 focus:outline-hidden focus:ring-2 focus:ring-[#1B2A4A]/20 focus:border-[#1B2A4A] transition-colors cursor-pointer"
+                >
+                  {PRICE_OPTIONS.map((opt) => (
+                    <option key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </option>
+                  ))}
+                </select>
+                <ChevronDown className="w-4 h-4 text-[#666666] absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Filter Alert Banner when any filter is active */}
         {isFiltered && (
-          <div className="mt-3.5 flex items-center justify-between bg-[#1B2A4A]/5 border border-[#1B2A4A]/20 text-[#1B2A4A] rounded-xl px-3 py-2 text-xs sm:text-sm">
-            <div className="flex items-center gap-2">
+          <div className="mt-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-2 bg-[#1B2A4A]/5 border border-[#1B2A4A]/20 text-[#1B2A4A] rounded-xl px-3 py-2 text-xs sm:text-sm">
+            <div className="flex items-center gap-2 flex-wrap">
               <Filter className="w-4 h-4 text-[#1B2A4A] shrink-0" />
               <span>
-                Filtered by Town:{' '}
-                <strong className="font-bold text-[#1B2A4A]">{selectedTown}</strong>{' '}
-                ({transactions.length} of {allTransactionsCount} units)
+                {bannerPrefix}{' '}
+                <strong className="font-bold text-[#1B2A4A]">
+                  {activeFilterLabels.join(' · ')}
+                </strong>{' '}
+                ({filteredTransactions.length} of {allTransactionsCount} units)
               </span>
             </div>
             <button
               id="clear-filter-btn"
-              onClick={onClearFilter}
-              className="inline-flex items-center gap-1 font-bold text-[#1B2A4A] hover:bg-[#1B2A4A]/10 bg-white px-2.5 py-1 rounded-lg border border-[#1B2A4A]/20 transition-colors"
+              onClick={handleClearAllFilters}
+              className="inline-flex items-center gap-1 font-bold text-[#1B2A4A] hover:bg-[#1B2A4A]/10 bg-white px-2.5 py-1 rounded-lg border border-[#1B2A4A]/20 transition-colors shrink-0 cursor-pointer self-start sm:self-auto"
             >
               <X className="w-3.5 h-3.5" />
-              <span>Show All Towns</span>
+              <span>Clear filters</span>
             </button>
           </div>
         )}
@@ -86,7 +251,7 @@ export const TopTransactionsSection: React.FC<TopTransactionsSectionProps> = ({
       {/* Subheader Title */}
       <div className="px-4 sm:px-5 py-2.5 bg-[#F5F5F5] border-b border-[#E5E5E5] flex items-center justify-between text-xs font-bold text-[#1B2A4A] uppercase tracking-wider">
         <span>
-          Showing {visibleCount} of {transactions.length} Transactions
+          Showing {visibleCount} of {filteredTransactions.length} Transactions
         </span>
         <span className="text-[#888888] font-normal normal-case text-[11px]">
           Sorted by Price (High → Low)
@@ -119,18 +284,20 @@ export const TopTransactionsSection: React.FC<TopTransactionsSectionProps> = ({
             </tr>
           </thead>
           <tbody className="divide-y divide-[#EBEBEB] text-[11px] sm:text-xs">
-            {visibleTransactions.length === 0 ? (
+            {filteredTransactions.length === 0 ? (
               <tr>
                 <td colSpan={6} className="py-8 px-4 text-center text-[#666666]">
                   <p className="font-medium text-xs">
-                    No matching HDB resale records found. Try selecting a different town or month.
+                    {isFiltered
+                      ? 'No transactions match these filters'
+                      : 'No matching HDB resale records found. Try selecting a different town or month.'}
                   </p>
                   {isFiltered && (
                     <button
-                      onClick={onClearFilter}
-                      className="mt-2 text-xs text-[#1B2A4A] font-bold underline underline-offset-4"
+                      onClick={handleClearAllFilters}
+                      className="mt-2 text-xs text-[#1B2A4A] font-bold underline underline-offset-4 cursor-pointer"
                     >
-                      Reset town filter
+                      Clear filters
                     </button>
                   )}
                 </td>
@@ -156,7 +323,7 @@ export const TopTransactionsSection: React.FC<TopTransactionsSectionProps> = ({
                     <td className="py-1.5 pl-3 pr-1 align-middle">
                       <button
                         onClick={() => onSelectTown(tx.town)}
-                        className="font-bold text-[#1B2A4A] hover:text-[#C9A961] hover:underline whitespace-nowrap block text-left"
+                        className="font-bold text-[#1B2A4A] hover:text-[#C9A961] hover:underline whitespace-nowrap block text-left cursor-pointer"
                         title={`Filter by ${tx.town}`}
                       >
                         {tx.town}
@@ -205,13 +372,13 @@ export const TopTransactionsSection: React.FC<TopTransactionsSectionProps> = ({
         </table>
       </div>
 
-      {/* Expand / Collapse Button: Shows Top 15 vs Full Monthly Dataset */}
-      {transactions.length > 15 && (
+      {/* Expand / Collapse Button: Shows Top 15 vs Full Filtered Dataset */}
+      {filteredTransactions.length > 15 && (
         <div className="p-3 bg-[#FAFAFA] border-t border-[#E5E5E5] text-center">
           <button
             id="toggle-show-all-transactions-btn"
             onClick={() => setShowAll((prev) => !prev)}
-            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-bold text-[#1B2A4A] bg-white hover:bg-[#1B2A4A]/5 border border-[#1B2A4A]/20 shadow-2xs transition-colors"
+            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-bold text-[#1B2A4A] bg-white hover:bg-[#1B2A4A]/5 border border-[#1B2A4A]/20 shadow-2xs transition-colors cursor-pointer"
           >
             {showAll ? (
               <>
@@ -238,21 +405,21 @@ export const TopTransactionsSection: React.FC<TopTransactionsSectionProps> = ({
             <TrendingUp className="w-3.5 h-3.5 text-[#C9A961]" />
             <h3 className="text-[11px] sm:text-xs font-bold tracking-wide text-slate-200 uppercase">
               {isFiltered
-                ? `${selectedTown} Monthly Volume Summary`
+                ? 'Filtered Transactions Summary'
                 : showAll
                 ? 'Monthly HDB Resale Market Total'
                 : 'Top 15 Visible Transactions Total'}
             </h3>
           </div>
           <span className="text-[10px] font-mono bg-white/10 text-slate-200 px-2 py-0.5 rounded border border-white/20">
-            {showAll ? 'Full Month' : 'Top 15 Visible'}
+            {showAll ? (isFiltered ? 'All Filtered' : 'Full Month') : 'Top 15 Visible'}
           </span>
         </div>
 
         <div className="grid grid-cols-2 gap-2.5">
           <div className="bg-white/10 p-2.5 rounded-lg border border-white/15">
             <div className="text-[11px] text-slate-300 font-medium">
-              {showAll ? 'Total Units Sold' : 'Visible Units'}
+              {showAll ? 'Total Filtered Units' : 'Visible Units'}
             </div>
             <div className="text-xl sm:text-2xl font-extrabold text-white mt-0.5 font-mono">
               {visibleCount.toLocaleString('en-SG')}{' '}
@@ -263,20 +430,21 @@ export const TopTransactionsSection: React.FC<TopTransactionsSectionProps> = ({
                 ? isFiltered
                   ? `of ${allTransactionsCount.toLocaleString('en-SG')} total monthly units`
                   : 'all monthly units'
-                : `of ${transactions.length.toLocaleString('en-SG')} available transactions`}
+                : `of ${filteredTransactions.length.toLocaleString('en-SG')} matching transactions`}
             </div>
           </div>
 
           <div className="bg-white/10 p-2.5 rounded-lg border border-white/15">
             <div className="text-[11px] text-slate-300 font-medium">
-              {showAll ? 'Total Monthly Value' : 'Visible Transaction Value'}
+              {showAll ? 'Total Filtered Value' : 'Visible Transaction Value'}
             </div>
             <div className="text-lg sm:text-xl font-extrabold text-[#C9A961] mt-0.5 tracking-tight font-mono">
               {formatCurrency(visibleTotalAmount)}
             </div>
             {!showAll && (
               <div className="text-[10px] text-slate-300 mt-0.5 font-mono">
-                Full total: {formatCurrency(totalMarketAmount)}
+                {isFiltered ? 'Filtered total: ' : 'Full total: '}
+                {formatCurrency(isFiltered ? filteredTotalAmount : totalMarketAmount)}
               </div>
             )}
           </div>

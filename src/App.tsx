@@ -40,13 +40,12 @@ export default function App() {
     }));
   };
 
-  const fetchHdbData = useCallback(async (town: string | null) => {
+  const fetchHdbData = useCallback(async () => {
     setViewState('loading');
     setErrorMessage('');
 
     try {
-      const url = town ? `/api/hdb?town=${encodeURIComponent(town)}` : '/api/hdb';
-      const res = await fetch(url);
+      const res = await fetch('/api/hdb');
 
       if (!res.ok) {
         if (res.status === 502 || res.status === 503 || res.status === 504) {
@@ -125,10 +124,10 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    fetchHdbData(selectedTown);
-  }, [fetchHdbData, selectedTown]);
+    fetchHdbData();
+  }, [fetchHdbData]);
 
-  const handleSelectTown = (town: string) => {
+  const handleToggleTown = (town: string) => {
     if (selectedTown?.toUpperCase() === town.toUpperCase()) {
       setSelectedTown(null);
     } else {
@@ -138,6 +137,10 @@ export default function App() {
         topSection.scrollIntoView({ behavior: 'smooth' });
       }
     }
+  };
+
+  const handleSelectTown = (town: string | null) => {
+    setSelectedTown(town);
   };
 
   const handleClearFilter = () => {
@@ -232,7 +235,7 @@ export default function App() {
               </p>
             </div>
             <button
-              onClick={() => fetchHdbData(selectedTown)}
+              onClick={() => fetchHdbData()}
               className="inline-flex items-center gap-1.5 text-xs font-bold text-white bg-[#1B2A4A] px-4 py-2 rounded-lg hover:bg-[#142038] transition-colors"
             >
               <RefreshCw className="w-3.5 h-3.5" />
@@ -260,7 +263,7 @@ export default function App() {
               </p>
             </div>
             <button
-              onClick={() => fetchHdbData(selectedTown)}
+              onClick={() => fetchHdbData()}
               className="inline-flex items-center gap-1.5 text-xs font-bold text-white bg-[#1B2A4A] px-4 py-2 rounded-lg hover:bg-[#142038] transition-colors"
             >
               <RefreshCw className="w-3.5 h-3.5" />
@@ -473,7 +476,7 @@ export default function App() {
                                 {reg.topTowns.map((town, idx) => (
                                   <div
                                     key={town.town}
-                                    onClick={() => handleSelectTown(town.town)}
+                                    onClick={() => handleToggleTown(town.town)}
                                     className="flex items-center justify-between p-2 rounded-lg bg-white border border-[#E5E5E5] hover:border-[#C9A961] hover:bg-[#C9A961]/5 transition-colors cursor-pointer"
                                     title={`Filter transactions by ${town.town}`}
                                   >
@@ -535,7 +538,7 @@ export default function App() {
               townRanking={data.townRanking}
               selectedTown={selectedTown}
               latestMonth={data.month}
-              onSelectTown={handleSelectTown}
+              onSelectTown={handleToggleTown}
             />
 
             {/* Mandatory Footer Licence Attribution Text */}
