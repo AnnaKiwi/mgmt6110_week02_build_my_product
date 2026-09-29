@@ -319,3 +319,371 @@ GUARDRAILS:
 List all modified files after generating the changes.
 
 **Came back with:** A dashboard that can clearly display the total number of sales, total sales amount, total sales price, average house price, and sales situation of each region in a month, and this dashboard can also view the specific sales situation of each region.
+
+
+P## Problem Set 4
+
+### Blind arbiter exchanges
+
+Both exchanges were run in new temporary chats with memory off, outside the project, so the agent could not see the repository or the conversation in which the product was built. A coin toss decided which finding was Reviewer A. Note: the temporary chats could not be reopened afterwards, so the answers below were transcribed from screenshots taken at the time; tables are reproduced as they appeared.
+
+### Blind arbiter 1: data freshness (fourth row)
+
+**Prompt:**
+
+```
+ROLE: You are a neutral arbiter between two usability reviewers who rated the same problem differently. You do not know which of them built the product. Do not try to work it out.
+
+CONTEXT: The product is an AI-augmented web app. It is for managers at a multi-branch property agency, and it turns the monthly data.gov.sg HDB resale dataset into a one-screen market overview by region and town, so they can see which areas are selling without reading the raw official records.
+Both reviewers inspected it against Nielsen's ten usability heuristics and rated the problem on this severity scale:
+0 I don't agree that this is a usability problem at all.
+1 Cosmetic problem only. Need not be fixed unless extra time is available.
+2 Minor usability problem. Fixing this should be given low priority.
+3 Major usability problem. Important to fix, so should be given high priority.
+4 Usability catastrophe. Imperative to fix before the product can be released.
+A rating rests on four factors: how often the problem happens, what it costs when it does, whether the person can learn around it, and whether it damages the product's standing out of proportion.
+
+REVIEWER A:
+- Where: Main page, at the top, under the month box.
+- What they did, what they saw: I scrolled through the whole page looking for when the sales data was last updated. The page shows "Month: 2026-09" but no "Last updated" date or time anywhere, so I could not tell whether I was looking at today's figures or older ones. For a daily property-sales dashboard, users need to know this straight away.
+- Which heuristic: 1, Visibility of System Status.
+- Screen or system: Both. The screen needs to show the last refresh time under the month, and the system needs to record when the data was last successfully updated so the screen can show it.
+- Severity, and why: 3. Timeliness matters for a sales dashboard. Without a visible update time, users cannot judge whether the transactions and totals are current, which lowers confidence in the product's core job, although they can still use it.
+- The repair: The page shows "Last updated: [date and time]" prominently, and says whether the data is current, still loading or unavailable.
+
+REVIEWER B:
+- Where: Main page, at the source note near the top ("Month: 2026-09, Source: data.gov.sg") and the open-data notice in the footer.
+- What they did, what they saw: I looked for how fresh the data is. The page shows the month (2026-09) and the source (data.gov.sg, with the Singapore Open Data Licence in the footer), but it never says how often the data is updated or on which day of the month a new set appears.
+- Which heuristic: 10, Help and Documentation.
+- Screen or system: Screen. The update schedule is known to whoever runs the data pipeline. The page only needs to state it next to the source.
+- Severity, and why: 1. The month label already gives a rough sense of how fresh the data is, so the cost is small, but people making decisions cannot tell whether this month's update has happened yet.
+- The repair: The source note says how often and when the data is updated, so people know when to expect new figures.
+
+EVIDENCE NEITHER REVIEWER CONTROLS:
+- Reviewers who raised this problem independently, counting A and B: 2 out of 4
+- Severities that reviewers other than A and B gave this problem: NONE
+
+GOAL: Judge the evidence, not the reviewers.
+1. Say whether A and B describe the same problem. If they do not, say so and stop.
+2. For each of the four factors, say what the evidence shows and what it cannot show.
+3. Give the severity the evidence supports, and name the factor that decided it.
+4. Name the one observation that would change your rating, and say how it could be collected quickly.
+
+GUARDRAILS: Do not split the difference between A and B unless the evidence puts the rating there. If the evidence is too thin to decide, say so plainly instead of inventing a reason. Do not ask which reviewer built the product.
+```
+**Arbiter's answer:**
+
+**1. Do A and B describe the same problem?**
+
+Yes. Both describe the same underlying usability problem: **the interface does not give users enough information to judge the freshness of the displayed HDB resale data**.
+
+They emphasize different missing signals-A wants the **actual last successful refresh time/status**, while B wants the **expected update schedule**-and they assign different Nielsen heuristics. Those are different diagnoses/repairs of the same user uncertainty, not separate problems.
+
+**2. What the evidence shows for each severity factor**
+
+| Factor | What the evidence shows | What it cannot show |
+|---|---|---|
+| Frequency | 2 of 4 reviewers independently noticed the freshness problem. The missing information appears to be persistent on the main page rather than an intermittent state. | Reviewer detection is not user incidence. We do not know how often actual managers need to establish freshness, or how often uncertainty affects a real task. |
+| Cost when it happens | Both reviewers agree that a user cannot determine freshness precisely. A says this affects confidence in whether transactions/totals are current; B says the month provides at least a rough freshness cue. | There is no observed evidence of a wrong decision, delayed task, abandoned task, incorrect report, or other material consequence. Calling the dashboard "daily" comes only from A and is not established by the supplied product context. |
+| Learnability / ability to work around it | The month and source are visible, so users have partial context. A searched the entire page and still could not obtain the missing freshness information from the interface. | We do not know whether managers already understand data.gov.sg's publication cycle, can infer freshness reliably, or routinely verify it elsewhere. No repeated-use evidence is supplied. |
+| Disproportionate reputational damage | A reports reduced confidence in the product's core job. Independent detection by 2/4 reviewers suggests the omission is noticeable. | There is no user evidence showing loss of trust in the product, complaints, abandonment, or reputational harm disproportionate to the immediate task cost. |
+
+**3. Severity supported by the evidence**
+
+**Severity 2 - Minor usability problem; low-priority fix.**
+
+The deciding factor is **cost when the problem occurs**. The evidence establishes a genuine information gap, but it does not establish the substantial task consequence needed to support A's severity 3. At the same time, this is more than purely cosmetic: users seeking freshness information cannot obtain it, and two independent reviewers detected that gap.
+
+This is therefore not an arithmetic compromise between 3 and 1. On the supplied evidence, **2 is supported because the problem affects users' ability to interpret the data, while evidence of major consequences is absent**.
+
+**4. The one observation that would change the rating**
+
+The most consequential observation would be: **a representative manager makes or is about to make a materially different business decision because they incorrectly believe the displayed month's figures are current.**
+
+That would directly supply the missing evidence about **cost**, and would support reconsidering the problem as severity 3.
+
+It can be collected quickly with a short task-based usability test: give several representative managers the dashboard at a point when the underlying dataset's freshness is deliberately known, ask them to use it for a realistic branch/market decision, and observe whether they correctly determine how current the figures are **without prompting them about freshness**. Record both their conclusion about freshness and whether it changes the decision they make.
+
+### Blind arbiter 2: summary KPIs (second row)
+
+Coin toss: heads, so my reading is Reviewer A and the groupmate's finding is Reviewer B.
+Ratings before the arbiter: mine (tempted) 0, groupmates 3 and 2. Arbiter: 0, conditional.
+
+**Prompt:**
+
+```
+ROLE: You are a neutral arbiter between two usability reviewers who rated the same problem differently. You do not know which of them built the product. Do not try to work it out.
+
+CONTEXT: The product is an AI-augmented web app. It is for managers at a multi-branch property agency, and it turns the monthly data.gov.sg HDB resale dataset into a one-screen market overview by region and town, so they can see which areas are selling without reading the raw official records.
+Both reviewers inspected it against Nielsen's ten usability heuristics and rated the problem on this severity scale:
+0 I don't agree that this is a usability problem at all.
+1 Cosmetic problem only. Need not be fixed unless extra time is available.
+2 Minor usability problem. Fixing this should be given low priority.
+3 Major usability problem. Important to fix, so should be given high priority.
+4 Usability catastrophe. Imperative to fix before the product can be released.
+A rating rests on four factors: how often the problem happens, what it costs when it does, whether the person can learn around it, and whether it damages the product's standing out of proportion.
+
+REVIEWER A:
+- Where: Main page, at the top, directly under the header.
+- What they did, what they saw: I opened the page and looked at the top section. Right under the header there are four summary cards: Monthly Total Sold Units (1,894 units), Monthly Transaction Value (S$1.29B), Average Price PSF (S$644 psf) and Top Monthly Sales Town (TAMPINES, 162 units). Below them are three region cards (OCR, RCR, CCR), each with units sold, total value and average psf.
+- Which heuristic: 6, Recognition Rather Than Recall.
+- Screen or system: Screen. The figures are already calculated and shown on the page.
+- Severity, and why: 0. The summary figures asked for are already at the top of the page, so users do not have to work out the overall market from the detailed tables.
+- The repair: No change is needed, because the page already opens with a summary of the month's market.
+
+REVIEWER B:
+- Where: Main page, missing summary KPIs at the top of the page.
+- What they did, what they saw: I looked for summary KPIs for the resale data and found none. I had to understand the market by mentally combining the results from several charts, when I should have been able to see it at a glance.
+- Which heuristic: 6, Recognition Rather Than Recall.
+- Screen or system: Screen. The resale data is already on the page but the key figures are not summarised prominently.
+- Severity, and why: 3. Users must examine several charts and combine the information in their heads to understand the overall market, which takes effort and slows down the dashboard's main job of giving a quick overview.
+- The repair: The top of the page shows summary cards for total transactions, median sale price, median psf, the highest transaction and the most active district.
+
+EVIDENCE NEITHER REVIEWER CONTROLS:
+- Reviewers who raised this problem independently: 2 out of 3 groupmates who reviewed the product
+- Severities that reviewers other than A and B gave this problem: 2
+
+GOAL: Judge the evidence, not the reviewers.
+1. Say whether A and B describe the same problem. If they do not, say so and stop.
+2. For each of the four factors, say what the evidence shows and what it cannot show.
+3. Give the severity the evidence supports, and name the factor that decided it.
+4. Name the one observation that would change your rating, and say how it could be collected quickly.
+
+GUARDRAILS: Do not split the difference between A and B unless the evidence puts the rating there. If the evidence is too thin to decide, say so plainly instead of inventing a reason. Do not ask which reviewer built the product.
+```
+
+**Arbiter's answer:**
+
+**1. Same problem?**
+
+Yes. A and B are describing the same underlying usability question under **Heuristic 6: Recognition Rather Than Recall**: whether the main page provides prominent summary KPIs so managers can understand the monthly resale market without mentally combining lower-level information.
+
+The disagreement is primarily factual. A reports that summary cards are already present at the top; B reports that they are absent.
+
+**2. Four severity factors**
+
+| Factor | What the evidence shows | What it cannot show |
+|---|---|---|
+| Frequency | The issue was independently raised by **2 of 3 groupmates**, so the concern was not unique to B. | This does not establish how often actual managers encounter the problem during normal use. More importantly, it does not resolve whether those reviewers saw the same product state/version. |
+| Impact / cost | If the KPIs really are absent, users would need to synthesize several charts, adding effort to a dashboard whose purpose is rapid overview. If A's observation is accurate, that cost largely disappears because overall figures are directly visible. | There is no task-time, error-rate, or user-testing evidence showing how much extra effort the alleged problem actually causes. |
+| Persistence / learnability | If the cards are absent, users could probably learn where relevant information appears in the charts, but they would still have to perform some synthesis repeatedly. If the cards shown by A are present, there is essentially nothing to learn around for this particular issue. | The evidence does not show whether users become substantially faster with repeated use or continue struggling. |
+| Disproportionate reputational effect | Nothing supplied demonstrates unusually severe damage to trust or perceived product quality. | We cannot infer such damage merely because the dashboard's overview could be slower to interpret. |
+
+**3. Severity supported: 0, conditional on the described current screen being the product being rated.**
+
+The **deciding factor is impact/cost**. A provides concrete screen-level evidence: four top-level summary cards with specific displayed values, followed by three regional cards. That directly contradicts the factual premise underlying B's severity-3 rating-that users must combine several charts because no summary KPIs exist.
+
+The independent evidence that 2 of 3 groupmates raised the issue, including another severity of **2**, increases confidence that there may have been a discoverability problem or a different product state. It does **not**, by itself, establish that the summary is absent. Severity should follow the observed interface condition rather than reviewer voting.
+
+There is also a small mismatch between **what exists** and B's proposed repair: B asks for somewhat different metrics (median price, median psf, highest transaction, most active district), whereas A observes total units, total value, average psf and top sales town. That could support a *different* problem about whether the **right KPIs** are shown, but the supplied evidence does not establish that problem.
+
+**4. The one observation that would change the rating**
+
+The decisive observation is: **When a manager opens the same current version of the main page in its normal initial state, are the summary KPI cards immediately visible and recognizable as the market overview?**
+
+This can be collected quickly with a **fresh-load observation**: give one or two people the current production URL, ask them to open it without guidance and say where they would look for the month's overall market figures, while recording the screen. If the reported cards are present and immediately found, **0 remains supported** for the specific "missing summary KPIs" problem. If the cards are genuinely absent, hidden in the normal initial state, or consistently not recognized as the summary, the factual basis changes and severity should be reassessed from that observation rather than from A/B's disagreement.
+
+### Repair 1: filter by town, flat type and price
+Commit: 7585c4c
+
+**Prompt (argue against my repair):**
+
+```
+ROLE: You are a sceptical senior developer and usability reviewer working in my existing project. Before you write any code, your job is to argue against the repair I propose.
+
+CONTEXT:
+- Live address: https://mgmt6110-week02-build-my-product.vercel.app
+- Who the product is for, and what it does for them: For managers at a multi-branch property agency, it turns the monthly data.gov.sg HDB resale dataset into a one-screen market overview by region and town, so they can see which areas are selling without reading the raw official records.
+- The finding, in its six lines:
+  - Where: Main page, the Transactions table and the Town Rankings list that filters it.
+  - What they did, what they saw: Reviewers wanted to narrow the Transactions table to the part of the market they care about. The only way to filter is to click a town in the Town Rankings list, and that list shows only the top 10 towns. BISHAN appears many times in the table (273A BISHAN ST 24, 134 BISHAN ST 12) but cannot be filtered, so a user interested in Bishan has to read all 1,894 rows in price order. There is also no way to narrow by region, price range or flat type.
+  - Which heuristic: 7, Flexibility and Efficiency of Use.
+  - Screen or system: Screen. Every transaction is already on the page with its town, region, flat type and price, and the town filter already works for the top 10.
+  - Severity, and why: 3. Narrowing to a relevant area is a core task for this dashboard, and users outside the top 10 towns get no route at all.
+  - The repair: A user can narrow the Transactions table to any town in the data, not only the top 10, and sees the same "Filtered by Town: ... (N of 1894 units)" line.
+- The evidence behind it: 3 of 3 groupmates raised it (severities 3, 3 and 2).
+- The repair I propose: Above the Transactions table there is a town selector listing every town in the dataset, plus a region selector (OCR / RCR / CCR). Choosing one filters the table and the summary card below it, shows the existing "Filtered by Town" line, and "Show All Towns" clears it. The Top 10 ranking click still works as a shortcut.
+
+GOAL: Argue against my repair.
+1. Does it solve the problem the finding describes, or a problem I already believed I had? Say which, and why.
+2. Does the problem belong to the screen or to the system, and does my repair sit in the right half?
+3. Name one heuristic this repair could break while it serves the one above, and how.
+4. Propose the smallest alternative that would make the same thing true.
+5. Tell me exactly what to do on the live address to check that the repair worked.
+
+OUTPUT: Your arguments first, as a numbered list. Then stop. Write no code until I reply with the repair I have chosen.
+
+GUARDRAILS: Do not tell me the repair is good. If you have no strong reason to doubt it, say so plainly instead of inventing one. When I do ask you to build, change only what the repair needs. Do not remove Disqus or the privacy notice, and do not break /api/health.
+```
+
+**Agent's arguments:**
+
+1. Does it solve the problem the finding describes, or a problem you already believed you had?
+It solves a problem you already believed you had by bundling unrequested features. The finding specifically identified that Bishan (and other non-top-10 towns) cannot be filtered, leaving users stranded with 1,894 rows. However, your proposal adds a full Region selector (OCR / RCR / CCR) on top of the town selector. The reviewers did mention in passing that region/price/flat type filters are absent, but the core task failure and severity 3 rating were solely about town-level discoverability. Introducing multi-dimensional filtering (region vs. town interactions) before addressing universal town access over-engineers the solution.
+
+2. Does the problem belong to the screen or to the system, and does your repair sit in the right half?
+The problem belongs squarely to the screen, and your repair sits in the right half. The full dataset (1,894 records) is already fetched and resident in memory on the client side; all towns, flat types, and prices exist in the records. No backend schema, database migration, or new endpoint is required. However, placing a redundant standalone region filter duplicates the interactive Regional Market Performance cards directly above the table that already visually represent CCR, RCR, and OCR.
+
+3. Which heuristic could this repair break while serving Heuristic 7 (Flexibility and Efficiency of Use)?
+It risks breaking Heuristic 8: Aesthetic and Minimalist Design and Heuristic 4: Consistency and Standards. Adding two separate dropdown menus (Region + Town) creates state conflict and visual clutter:
+- What happens when a user selects region "CCR" and town "WOODLANDS" (an OCR town)? Does the town selector filter dynamically, reset silently, or produce an empty table?
+- The top section of the dashboard already has an interactive visual region breakdown and a top-10 town leaderboard. Adding an isolated filter bar above the table introduces duplicate controls for the exact same dimensions without clear visual priority.
+
+4. The smallest alternative that makes the same thing true:
+Add a single searchable/alphabetical native <select> dropdown (or compact combobox) for "All Towns (26 Towns)" directly adjacent to the table search/filter header, while leaving the existing town ranking and regional cards intact.
+- Selecting any town from this single dropdown updates the existing selectedTown state.
+- It reuses the exact same "Filtered by Town: [NAME] (N of 1894 units)" feedback banner and "Show All Towns" reset button that already exist.
+- It requires zero new filter state logic, creates zero cross-filter conflicts with regions, and completely resolves the Bishan problem in under 15 lines of UI code.
+
+5. Exactly what to do on the live address to check that the repair worked:
+1. Open the live address.
+2. Confirm Bishan is not visible in the Top 10 Town Rankings list.
+3. Open the town filter dropdown above the Transactions table and select BISHAN.
+4. Verify that the banner displays "Filtered by Town: BISHAN (X of 1,894 units)", every transaction visible in the table shows BISHAN in the Town column, and the bottom summary totals recalculate to reflect only Bishan units.
+5. Click "Show All Towns" (or select "All Towns" in the dropdown) and verify the table returns to the full dataset of 1,894 units.
+
+**My decision and build instruction:**
+
+```
+Thanks. I have read your arguments and decided:
+
+1. Partly rejected. Two of the three reviewers who rated this 3 asked specifically for flat type and price filters, not only for towns outside the top 10. So the repair covers town, flat type and price, not town alone.
+2. Accepted. The problem is on the screen and all the data is already on the page, so no backend change is needed. I also accept that a Region filter would duplicate the Regional Market Performance cards.
+3. Accepted. A Region filter would conflict with the Town filter (e.g. CCR + WOODLANDS), so I will NOT add a Region filter.
+4. Partly accepted. I keep your idea of reusing the existing selectedTown state, banner and reset button, but I add Flat Type and Price dropdowns, because they apply together (AND) and cannot conflict with Town the way Region would.
+5. Accepted. I will use your check steps on the live address, and I have added checks for the Flat Type and Price filters.
+
+Build this repair only:
+
+1. Directly above the Transactions table, add three dropdowns in one row:
+   - Town: "All Towns" (default), then every town in the dataset in alphabetical order.
+   - Flat Type: "All Flat Types" (default), then every flat type in the dataset.
+   - Price: "All Prices" (default), "Under S$500,000", "S$500,000 - S$800,000", "S$800,000 - S$1,000,000", "Over S$1,000,000".
+2. The three filters apply together (AND) to the table and to the summary card below it.
+3. Town uses the existing selectedTown state. Clicking a town in the Top 10 ranking still works and updates the Town dropdown to match, and the FILTERED badge still appears on that ranking row.
+4. The existing banner lists every active filter and the count, e.g. "Filtered by Town: BISHAN - 5 ROOM - Over S$1,000,000 (N of 1894 units)". "Show All Towns" becomes "Clear filters" and resets all three dropdowns.
+5. If no transactions match, the table says so in plain words ("No transactions match these filters") instead of showing an empty table.
+6. On a phone the three dropdowns stack vertically and stay fully visible.
+
+Change nothing else. Do not add a Region filter. Do not remove Disqus or the privacy notice, and do not break /api/health. When you finish, list the files you changed.
+```
+
+**Result:** the agent changed src/App.tsx and src/components/TopTransactionsSection.tsx and added the Town, Flat Type and Price filters, the combined banner, Clear filters and the "No transactions match these filters" message.
+
+### Repairs 2, 3 and 4: table width, S$ on PSF, monthly dataset label
+Commits: 4192714 (table width), c564319 (S$ on PSF), b21101d (monthly dataset label and tab title)
+
+**Prompt (argue against my repairs):**
+
+```
+ROLE: You are a sceptical senior developer and usability reviewer working in my existing project. Before you write any code, your job is to argue against each of the three repairs I propose below. Treat them separately.
+
+CONTEXT:
+- Live address: https://mgmt6110-week02-build-my-product.vercel.app
+- Who the product is for, and what it does for them: For managers at a multi-branch property agency, it turns the monthly data.gov.sg HDB resale dataset into a one-screen market overview by region and town, so they can see which areas are selling without reading the raw official records.
+
+=== REPAIR A: table width ===
+- The finding, in its six lines:
+  - Where: Transactions table, on desktop Safari/Chrome and on an iPhone.
+  - What they did, what they saw: The table is cut off horizontally. The table needs 580px but its container is fixed at 542px at every window size, even at full screen with hundreds of pixels of empty margin. When TOWN is visible, TOTAL S$ is cut; when TOTAL S$ is visible, TOWN is cut ("CENTRAL AREA" becomes "TRAL AREA"). "KALLANG/WHAMPOA" overprints the "5 ROOM" cell, and the AREA(SQM) and S$ PSF headers run into each other. On a phone only Town, Flat Type and Block-Street are visible.
+  - Which heuristic: 6, Recognition Rather Than Recall (a price is never on screen with its town).
+  - Screen or system: Screen. The layout width is fixed by the page.
+  - Severity, and why: 3. Every visitor meets it on every row of the main table, and scrolling sideways has to be repeated for every row.
+  - The repair: In a normal desktop window every column of a row is visible at once with no sideways scrolling and no overlapping text. On a phone the Town column stays in view while the other columns scroll.
+- The evidence behind it: 1 of 3 groupmates raised it (severity 3).
+- The repair I propose: Widen the page's maximum width so the table fits on desktop, give the Town column enough width (truncate long names with the full name on hover), and make the Town column sticky on small screens.
+
+=== REPAIR B: currency format ===
+- The finding, in its six lines:
+  - Where: Transactions table, S$ PSF column.
+  - What they did, what they saw: PSF cells show "$1,493" while every other amount on the page is written "S$" (S$1,720,000, S$644 psf).
+  - Which heuristic: 4, Consistency and Standards.
+  - Screen or system: Screen. Only the display format.
+  - Severity, and why: 1. Cosmetic; nobody is likely to misread the currency.
+  - The repair: Every currency value on the page uses the same S$ format.
+- The evidence behind it: only I raised it in my own evaluation.
+- The repair I propose: Show the PSF column as "S$1,493".
+
+=== REPAIR C: data freshness ===
+- The finding, in its six lines:
+  - Where: Top of the main page, under the month, and the browser tab title.
+  - What they did, what they saw: The page shows "Month: 2026-09" but no "Last updated" date or time, so users cannot tell how current the figures are. The browser tab title is "DailySalesDashboard - Singapore Property Sales", which suggests the data is daily when it is a monthly dataset.
+  - Which heuristic: 1, Visibility of System Status.
+  - Screen or system: Both. The screen must show it; the system must supply when the data was last successfully fetched.
+  - Severity, and why: 2 (after a blind arbiter; reviewers gave 3 and 1). Users cannot judge freshness, but there is no evidence of a wrong decision yet.
+  - The repair: The page says when the data was last updated and that it is a monthly dataset, and the tab title no longer says "Daily".
+- The evidence behind it: 1 of 3 groupmates raised it, and I raised a related finding.
+- The repair I propose: Under the month, show "Monthly dataset - Last updated: [date and time]" using a real timestamp from the data or the API response (not an invented one), and change the tab title to "HDB Resale Market Dashboard".
+
+GOAL: For EACH of A, B and C separately:
+1. Does it solve the problem the finding describes, or a problem I already believed I had? Say which, and why.
+2. Does the problem belong to the screen or to the system, and does my repair sit in the right half?
+3. Name one heuristic this repair could break while it serves the one above, and how.
+4. Propose the smallest alternative that would make the same thing true.
+5. Tell me exactly what to do on the live address to check that the repair worked.
+
+OUTPUT: Your arguments first, as three numbered lists (A, B, C). Then stop. Write no code until I reply with the repair I have chosen.
+
+GUARDRAILS: Do not tell me a repair is good. If you have no strong reason to doubt one, say so plainly instead of inventing one. When I do ask you to build, change only what that repair needs. Do not remove Disqus or the privacy notice, and do not break /api/health.
+```
+
+**Agent's arguments:**
+
+REPAIR A: Table Width & Column Truncation
+
+1. It solves the problem the finding describes, but the proposal over-prescribes a fragile implementation. The problem is that the container restricts the width artificially (max-w-xl / fixed ~542px width in parent layout) while the table demands 580px+, causing desktop cutoffs and text collisions. However, adding CSS sticky positioning to the first column on mobile introduces layout fragility (table cells with borders/backgrounds desyncing across horizontal scrolls in standard HTML <table> elements).
+2. It belongs entirely to the screen, and the repair sits in the right half. No backend data changes are required; this is purely CSS container max-width and table layout styling.
+3. It risks breaking Heuristic 8: Aesthetic and Minimalist Design and Heuristic 1: Visibility of System Status. If the main page container is widened indiscriminately, the other cards (Executive Overview, Regional Performance, Town Rankings) may stretch too thin and look sparse on 1440px+ screens. On mobile, sticky table columns in native HTML tables often overlap adjacent cells or clip subpixel borders unless explicit z-indices and solid background colors are enforced, creating visual artifacts and occluded headers.
+4. Smallest alternative: change the container layout in App.tsx from max-w-xl (approx. 576px) to max-w-3xl or max-w-4xl on desktop. In TopTransactionsSection.tsx, remove table-fixed in favor of natural table flow with whitespace-nowrap on numeric columns, or adjust the column widths so all 6 columns fit without horizontal scroll on desktop. On small screens, keep the standard horizontal scroll container (overflow-x-auto) with a subtle fade cue or standard scrollbar instead of complex sticky table columns.
+5. Check: open the live address on a desktop browser at 1280px or wider; scroll to the Top HDB Resale Transactions table; verify that all 6 headers and all cells are visible simultaneously without horizontal scrollbars; verify that KALLANG/WHAMPOA and CENTRAL AREA do not collide with adjacent Flat Type cells.
+
+REPAIR B: Currency Format
+
+1. I have no strong reason to doubt this repair. It directly solves the exact inconsistency identified in the finding. In TopTransactionsSection.tsx the PSF cell currently renders ${tx.psf.toLocaleString('en-SG')} (e.g., $1,493), whereas the header says S$ PSF and all other currency values render via formatCurrency() or formatPsf() with S$.
+2. It belongs to the screen, and the repair sits in the right half. It is a single-string template prefix change (or calling the existing formatPsf helper).
+3. It could break Heuristic 8: Aesthetic and Minimalist Design (character overflow). Prefixing S$ adds characters, which in narrow columns can cause wrapping or push the table width out by 10-15px if column widths are rigid. Since the column header already says S$ PSF, standardizing the cell content is straightforward if the width allows it.
+4. Smallest alternative: replace ${tx.psf.toLocaleString('en-SG')} with S$${tx.psf.toLocaleString('en-SG')} (or use the existing helper formatPsf(tx.psf)).
+5. Check: open the live address, scroll to the Transactions table, and verify that each S$ PSF value is formatted as S$1,493 with the leading S$, matching the format of Total S$.
+
+REPAIR C: Data Freshness & Browser Tab Title
+
+1. It partly solves the problem, but risks solving a problem you already believed you had regarding the "Last updated" timestamp. Fixing the tab title directly resolves the misleading "Daily" mismatch. For the timestamp: if the upstream data.gov.sg API does not return a record-level update timestamp, displaying the client's fetch execution time can mislead managers into believing new official government data was published at that second, when it is actually an unchanging monthly batch.
+2. It belongs to both, but the repair risks sitting in the wrong half unless the API already supplies the real timestamp. If /api/hdb sends a fetchedAt or lastModified timestamp from data.gov.sg, the screen merely presents it. If not, adding a timestamp on the client side would represent "screen time" rather than "data freshness".
+3. It risks breaking Heuristic 2: Match Between System and the Real World. Property managers understand HDB resale records as monthly government releases. If the dashboard shows "Last updated: Sep 28, 2026, 07:59 AM", a manager could infer that transactions are streaming live or that transactions from that morning have been included.
+4. Smallest alternative: update the <title> in index.html to "HDB Resale Market Dashboard - Singapore Property Sales"; label the dataset frequency and release month explicitly, e.g. "Official HDB Monthly Resale Dataset - Month: [YYYY-MM]"; if a fetch timestamp is exposed by the API, label it "Data refreshed: [timestamp]" rather than an unqualified "Last updated".
+5. Check: verify the browser tab title reads "HDB Resale Market Dashboard" and no longer contains "Daily"; verify the page clearly says the data is the monthly dataset.
+
+**My decisions and build instruction for Repair 2:**
+
+```
+Thanks. My decisions:
+
+REPAIR A:
+- Accepted: widen the page container to max-w-3xl (not wider, so the other cards do not stretch too thin), and adjust the table column widths so all six columns fit on desktop with no sideways scrolling and no overlapping text.
+- Rejected: keeping plain horizontal scroll on phones. The finding was made on an iPhone, where a price is never on screen with its town, so the Town column must stay in view. I accept your warning about sticky cells, so make the sticky Town cells (header and body) use a solid background matching each row and a z-index so they never overlap or show through.
+
+REPAIR B:
+- Accepted with no change: prefix the PSF cell with "S$" (e.g. "S$1,493"). Do not use formatPsf, because it adds "psf", which the column header already says.
+
+REPAIR C:
+- Accepted: change the <title> in index.html to "HDB Resale Market Dashboard - Singapore Property Sales".
+- Accepted: do NOT show the page-load time as "Last updated". Label the data clearly as "Official HDB Monthly Resale Dataset - Month: [YYYY-MM]". Only if /api/hdb already returns a real timestamp from data.gov.sg, show it as "Data refreshed: [timestamp]"; if it does not, show no timestamp. Tell me which case applies.
+
+Build REPAIR A only now. Change nothing else. Do not remove Disqus or the privacy notice, and do not break /api/health. When you finish, list the files you changed.
+```
+
+**Build instruction for Repair 3:**
+
+```
+Now build REPAIR B only, as decided above. Change nothing else. List the files you changed.
+```
+
+**Build instruction for Repair 4:**
+
+```
+Now build REPAIR C only, as decided above. Change nothing else. List the files you changed, and tell me whether /api/hdb returns a real timestamp.
+```
+
+**Agent's answer on the timestamp:** /api/hdb does not return a timestamp from data.gov.sg (it returns only month, records, totalUnits, totalValue, avgPsf and townRanking), so no timestamp is shown and the data is labelled "Official HDB Monthly Resale Dataset - Month: 2026-09".
+
+**Note on Repair 4:** the agent's version of index.html did not contain the Disqus, Clarity and privacy-notice code that is in the repository, so I did not copy it. I changed only the <title> and og:title lines in the repository's index.html by hand.
